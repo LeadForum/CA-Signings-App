@@ -1,0 +1,2401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CA Signings - Unified Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --navy-900: #0B1426; --navy-800: #12203A; --navy-700: #1E3A5F; --navy-600: #2C5282;
+            --gold-500: #C4A052; --gold-400: #D4AF37;
+            --gray-50: #F9FAFB; --gray-100: #F3F4F6; --gray-200: #E5E7EB; --gray-300: #D1D5DB;
+            --gray-400: #9CA3AF; --gray-500: #6B7280; --gray-600: #4B5563; --gray-700: #374151;
+            --success: #10B981; --warning: #F59E0B; --danger: #EF4444; --info: #3B82F6;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--navy-900) 0%, var(--navy-700) 100%); min-height: 100vh; color: var(--gray-700); }
+
+        /* Header */
+        .platform-header { background: rgba(11,20,38,0.8); backdrop-filter: blur(20px); padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100; }
+        .platform-logo { font-size: 22px; font-weight: 700; color: white; }
+        .platform-logo span { color: var(--gold-500); font-weight: 400; }
+        .view-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.1); padding: 4px; border-radius: 12px; }
+        .view-btn { padding: 10px 20px; border: none; background: transparent; color: rgba(255,255,255,0.6); border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: 500; font-size: 13px; transition: all 0.2s; }
+        .view-btn:hover { color: white; background: rgba(255,255,255,0.1); }
+        .view-btn.active { background: var(--gold-500); color: white; }
+        .status-badge { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.6); font-size: 12px; }
+        .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); } 50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); } }
+
+        /* Gallery View */
+        .gallery-view { padding: 40px; overflow-x: auto; }
+        .gallery-title { color: white; text-align: center; font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .gallery-subtitle { color: rgba(255,255,255,0.6); text-align: center; margin-bottom: 40px; }
+        .phone-grid { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; padding-bottom: 40px; }
+        .phone-wrapper { display: flex; flex-direction: column; align-items: center; }
+        .phone-label { color: var(--gold-500); font-weight: 600; margin-bottom: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* Phone Frame */
+        .phone { width: 300px; height: 620px; background: #000; border-radius: 44px; padding: 10px; box-shadow: 0 25px 50px rgba(0,0,0,0.4); position: relative; }
+        .phone::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 90px; height: 26px; background: #000; border-radius: 20px; z-index: 10; }
+        .screen { width: 100%; height: 100%; background: var(--gray-50); border-radius: 36px; overflow: hidden; display: flex; flex-direction: column; }
+        .status-bar { height: 44px; background: var(--navy-700); display: flex; justify-content: space-between; align-items: flex-end; padding: 0 24px 8px; color: white; font-size: 13px; font-weight: 600; }
+        .app-header { background: var(--navy-700); padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
+        .app-logo { color: white; font-weight: 600; font-size: 16px; }
+        .app-logo span { color: var(--gold-500); }
+        .header-btn { width: 34px; height: 34px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+        .content { flex: 1; overflow-y: auto; padding: 18px; background: var(--gray-50); }
+
+        /* Navigation */
+        .nav-bar { display: flex; justify-content: space-around; padding: 10px 0 14px; background: white; border-top: 1px solid var(--gray-100); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--gray-400); font-size: 9px; font-weight: 500; }
+        .nav-item.active { color: var(--navy-700); }
+        .nav-icon { width: 22px; height: 22px; }
+        .nav-icon svg { width: 100%; height: 100%; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+        /* Cards */
+        .card { background: white; border-radius: 14px; padding: 16px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .card-icon { width: 36px; height: 36px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--info); }
+        .card-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .card-title { font-size: 10px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Service Grid */
+        .service-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+        .service-card { background: white; border-radius: 12px; padding: 16px 12px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06); cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .service-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .service-card.selected { border-color: var(--gold-500); }
+        .service-icon { width: 40px; height: 40px; margin: 0 auto 10px; background: var(--gray-100); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--navy-700); }
+        .service-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .service-name { font-weight: 600; font-size: 11px; color: var(--gray-700); }
+        .service-desc { font-size: 9px; color: var(--gray-400); margin-top: 3px; }
+
+        /* Buttons */
+        .btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px 18px; border: none; border-radius: 10px; font-family: inherit; font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: var(--navy-700); color: white; }
+        .btn-gold { background: linear-gradient(135deg, var(--gold-500), var(--gold-400)); color: white; }
+        .btn-outline { background: white; border: 2px solid var(--navy-700); color: var(--navy-700); }
+        .btn svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        /* Emergency Banner */
+        .emergency-banner { background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); border-radius: 12px; padding: 16px; color: white; display: flex; align-items: center; gap: 12px; margin-bottom: 14px; cursor: pointer; transition: all 0.2s; }
+        .emergency-banner:hover { background: linear-gradient(135deg, var(--danger), #DC2626); }
+        .emergency-icon { width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .emergency-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .emergency-text { flex: 1; }
+        .emergency-title { font-weight: 700; font-size: 13px; }
+        .emergency-subtitle { font-size: 11px; opacity: 0.7; }
+
+        /* Greeting */
+        .greeting { font-size: 20px; font-weight: 600; color: var(--navy-700); margin-bottom: 16px; }
+
+        /* Appointment Card */
+        .appt-date { font-weight: 600; color: var(--gray-800); font-size: 14px; }
+        .appt-time { color: var(--gray-500); font-size: 12px; margin-top: 2px; }
+        .appt-type { color: var(--navy-700); font-size: 12px; margin-top: 4px; font-weight: 500; }
+        .countdown { display: flex; align-items: center; gap: 8px; padding: 10px; background: rgba(245,158,11,0.1); border-radius: 8px; margin: 12px 0; }
+        .countdown svg { width: 16px; height: 16px; stroke: var(--warning); stroke-width: 1.5; fill: none; }
+        .countdown-text { font-size: 11px; color: var(--warning); font-weight: 500; }
+
+        /* Checklist */
+        .checklist-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 12px; }
+        .checklist-item.complete { color: var(--success); }
+        .checklist-item.pending { color: var(--gray-500); }
+        .check-circle { width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+        .check-circle.complete { background: var(--success); color: white; }
+        .check-circle.pending { background: var(--gray-200); color: var(--gray-400); }
+
+        /* Form Elements */
+        .form-title { font-size: 18px; font-weight: 600; color: var(--navy-700); margin-bottom: 16px; text-align: center; }
+        .progress-bar { display: flex; gap: 4px; margin-bottom: 20px; }
+        .progress-seg { flex: 1; height: 4px; background: var(--gray-200); border-radius: 2px; }
+        .progress-seg.complete { background: var(--navy-700); }
+        .progress-seg.current { background: var(--gold-500); }
+
+        /* Option Cards */
+        .option-card { background: white; border: 2px solid var(--gray-200); border-radius: 12px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.2s; }
+        .option-card:hover { border-color: var(--navy-700); }
+        .option-card.selected { border-color: var(--gold-500); background: rgba(196,160,82,0.05); }
+        .option-icon { width: 36px; height: 36px; background: var(--gray-100); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--navy-700); }
+        .option-card.selected .option-icon { background: var(--gold-500); color: white; }
+        .option-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .option-info { flex: 1; }
+        .option-title { font-weight: 600; color: var(--gray-800); font-size: 13px; }
+        .option-desc { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+        .option-fee { font-size: 10px; color: var(--danger); font-weight: 600; margin-top: 3px; }
+
+        /* Calendar */
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .calendar-month { font-weight: 600; color: var(--navy-700); }
+        .calendar-nav { display: flex; gap: 8px; }
+        .calendar-nav button { width: 28px; height: 28px; border: 1px solid var(--gray-200); background: white; border-radius: 6px; cursor: pointer; }
+        .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 16px; }
+        .cal-day { text-align: center; padding: 8px 4px; border-radius: 8px; cursor: pointer; }
+        .cal-day-name { font-size: 9px; color: var(--gray-400); margin-bottom: 4px; }
+        .cal-day-num { font-weight: 600; font-size: 12px; color: var(--gray-700); }
+        .cal-day.available { background: rgba(16,185,129,0.1); }
+        .cal-day.selected { background: var(--navy-700); }
+        .cal-day.selected .cal-day-name, .cal-day.selected .cal-day-num { color: white; }
+        .time-section { margin-bottom: 16px; }
+        .time-label { font-size: 11px; color: var(--gray-500); font-weight: 600; margin-bottom: 8px; }
+        .time-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+        .time-slot { padding: 10px; background: white; border: 1px solid var(--gray-200); border-radius: 8px; text-align: center; font-size: 12px; font-weight: 500; cursor: pointer; }
+        .time-slot.selected { background: var(--navy-700); color: white; border-color: var(--navy-700); }
+
+        /* Success Screen */
+        .success-icon { width: 60px; height: 60px; background: var(--success); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: white; }
+        .success-icon svg { width: 28px; height: 28px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .success-title { text-align: center; font-size: 20px; font-weight: 700; color: var(--success); margin-bottom: 8px; }
+        .success-subtitle { text-align: center; color: var(--gray-500); font-size: 13px; margin-bottom: 20px; }
+        .confirm-details { background: white; border-radius: 12px; padding: 16px; }
+        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+        .detail-row:last-child { border-bottom: none; }
+        .detail-label { color: var(--gray-500); font-size: 12px; }
+        .detail-value { font-weight: 600; font-size: 12px; color: var(--gray-800); }
+
+        /* Split View */
+        .split-view { display: none; height: calc(100vh - 70px); padding: 24px; gap: 24px; }
+        .split-view.active { display: flex; }
+        .consumer-side { flex: 0 0 360px; display: flex; flex-direction: column; align-items: center; }
+        .dashboard-side { flex: 1; background: white; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; }
+
+        /* Dashboard */
+        .dash-header { padding: 20px 24px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; }
+        .dash-title { font-size: 18px; font-weight: 600; color: var(--navy-700); display: flex; align-items: center; gap: 10px; }
+        .dash-title svg { width: 24px; height: 24px; stroke: var(--navy-700); stroke-width: 1.5; fill: none; }
+        .live-badge { display: flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.1); padding: 6px 12px; border-radius: 20px; font-size: 10px; color: var(--success); font-weight: 600; }
+        .live-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: blink 1s infinite; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .dash-stats { display: flex; gap: 24px; }
+        .mini-stat { text-align: center; }
+        .mini-stat-value { font-size: 20px; font-weight: 600; color: var(--navy-700); }
+        .mini-stat-label { font-size: 10px; color: var(--gray-500); text-transform: uppercase; }
+        .dash-content { flex: 1; overflow-y: auto; padding: 20px; background: var(--gray-50); }
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat-card { background: white; border-radius: 12px; padding: 16px; text-align: center; }
+        .stat-card.highlight { background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); color: white; }
+        .stat-value { font-size: 22px; font-weight: 600; }
+        .stat-card:not(.highlight) .stat-value { color: var(--navy-700); }
+        .stat-label { font-size: 10px; color: var(--gray-500); margin-top: 4px; text-transform: uppercase; }
+        .stat-card.highlight .stat-label { color: rgba(255,255,255,0.6); }
+        .dash-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .dash-card { background: white; border-radius: 14px; overflow: hidden; }
+        .dash-card.full { grid-column: 1 / -1; }
+        .dash-card-header { padding: 14px 18px; border-bottom: 1px solid var(--gray-100); display: flex; justify-content: space-between; align-items: center; }
+        .dash-card-title { font-size: 13px; font-weight: 600; color: var(--navy-700); display: flex; align-items: center; gap: 8px; }
+        .dash-card-title svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .badge { background: var(--danger); color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+        .dash-card-body { padding: 14px 18px; max-height: 260px; overflow-y: auto; }
+
+        /* Signer Item */
+        .signer-item { display: flex; align-items: center; padding: 12px; border-radius: 10px; margin-bottom: 8px; background: var(--gray-50); gap: 10px; border-left: 3px solid var(--warning); }
+        .signer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--navy-700); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px; }
+        .signer-info { flex: 1; }
+        .signer-name { font-weight: 600; font-size: 12px; color: var(--gray-800); }
+        .signer-service { font-size: 10px; color: var(--gray-500); }
+        .signer-status { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: rgba(245,158,11,0.1); color: var(--warning); }
+
+        /* Activity */
+        .activity-item { display: flex; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--gray-100); }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.1); color: var(--info); }
+        .activity-icon svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .activity-text { font-size: 11px; color: var(--gray-700); }
+        .activity-time { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+
+        /* View Modes */
+        .gallery-view { display: none; }
+        .gallery-view.active { display: block; }
+
+        /* Hide elements */
+        .hidden { display: none !important; }
+
+        /* Tracking Screen */
+        .tracking-header { background: var(--navy-700); padding: 16px; text-align: center; color: white; }
+        .tracking-title { font-size: 14px; font-weight: 600; }
+        .tracking-subtitle { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+        .tracking-map { height: 160px; background: linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%); position: relative; overflow: hidden; }
+        .map-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px); background-size: 20px 20px; }
+        .map-route { position: absolute; top: 50%; left: 20%; right: 20%; height: 3px; background: var(--navy-700); border-radius: 2px; }
+        .map-route::before { content: ''; position: absolute; top: -12px; left: 0; width: 28px; height: 28px; background: var(--success); border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .map-route::after { content: ''; position: absolute; top: -12px; right: 0; width: 28px; height: 28px; background: var(--gold-500); border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .map-car { position: absolute; top: calc(50% - 14px); left: 45%; width: 28px; height: 28px; background: var(--navy-700); border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.2); display: flex; align-items: center; justify-content: center; color: white; animation: drive 2s ease-in-out infinite; }
+        .map-car svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        @keyframes drive { 0%, 100% { left: 40%; } 50% { left: 50%; } }
+        .map-eta { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: white; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; color: var(--navy-700); box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 6px; }
+        .map-eta svg { width: 14px; height: 14px; stroke: var(--warning); stroke-width: 1.5; fill: none; }
+        .progress-tracker { padding: 16px; background: white; }
+        .progress-tracker-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .progress-tracker-title { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+        .progress-status-badge { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 600; background: rgba(245,158,11,0.1); color: var(--warning); }
+        .progress-status-badge.arrived { background: rgba(16,185,129,0.1); color: var(--success); }
+        .progress-steps { display: flex; justify-content: space-between; position: relative; padding: 0 10px; }
+        .progress-steps::before { content: ''; position: absolute; top: 14px; left: 30px; right: 30px; height: 2px; background: var(--gray-200); }
+        .progress-line-fill { position: absolute; top: 14px; left: 30px; height: 2px; background: var(--navy-700); width: 50%; transition: width 0.5s; }
+        .progress-step { display: flex; flex-direction: column; align-items: center; position: relative; z-index: 1; }
+        .step-icon { width: 28px; height: 28px; border-radius: 50%; background: var(--gray-200); display: flex; align-items: center; justify-content: center; color: var(--gray-400); margin-bottom: 6px; }
+        .step-icon svg { width: 12px; height: 12px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .step-icon.complete { background: var(--navy-700); color: white; }
+        .step-icon.active { background: var(--warning); color: white; animation: pulse-step 1.5s infinite; }
+        @keyframes pulse-step { 0%, 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0.4); } 50% { box-shadow: 0 0 0 6px rgba(245,158,11,0); } }
+        .step-label { font-size: 8px; color: var(--gray-500); font-weight: 500; }
+        .step-label.active { color: var(--warning); font-weight: 600; }
+        .notary-card { margin: 14px; padding: 14px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .notary-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .notary-card-icon { width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--info); }
+        .notary-card-icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .notary-card-title { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; }
+        .notary-info { display: flex; align-items: center; gap: 12px; }
+        .notary-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 16px; }
+        .notary-details { flex: 1; }
+        .notary-name { font-weight: 600; font-size: 14px; color: var(--gray-800); }
+        .notary-rating { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+        .notary-rating svg { width: 12px; height: 12px; fill: var(--warning); stroke: none; }
+        .notary-actions { display: flex; gap: 8px; }
+        .notary-action-btn { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--gray-200); background: white; display: flex; align-items: center; justify-content: center; color: var(--navy-700); cursor: pointer; }
+        .notary-action-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .notary-action-btn:hover { background: var(--navy-700); color: white; border-color: var(--navy-700); }
+
+        /* Chat Screen */
+        .chat-header { background: var(--navy-700); padding: 14px 18px; display: flex; align-items: center; gap: 12px; }
+        .chat-avatar { width: 40px; height: 40px; background: rgba(255,255,255,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+        .chat-avatar svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .chat-info { flex: 1; }
+        .chat-name { color: white; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+        .ai-badge { background: var(--gold-500); color: white; font-size: 8px; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
+        .chat-status { font-size: 11px; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 4px; }
+        .online-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; }
+        .chat-messages { flex: 1; padding: 14px; overflow-y: auto; background: var(--gray-50); }
+        .chat-message { margin-bottom: 12px; max-width: 85%; }
+        .chat-message.bot { margin-right: auto; }
+        .chat-message.user { margin-left: auto; }
+        .chat-bubble { padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.4; }
+        .chat-message.bot .chat-bubble { background: white; color: var(--gray-700); border-bottom-left-radius: 4px; }
+        .chat-message.user .chat-bubble { background: var(--navy-700); color: white; border-bottom-right-radius: 4px; }
+        .chat-time { font-size: 10px; color: var(--gray-400); margin-top: 4px; padding: 0 4px; }
+        .chat-message.user .chat-time { text-align: right; }
+        .quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .quick-reply { padding: 8px 12px; background: rgba(30,58,95,0.1); border-radius: 16px; font-size: 11px; color: var(--navy-700); font-weight: 500; cursor: pointer; }
+        .quick-reply:hover { background: var(--navy-700); color: white; }
+        .chat-input-area { display: flex; gap: 10px; padding: 12px; background: white; border-top: 1px solid var(--gray-100); }
+        .chat-input { flex: 1; padding: 10px 14px; border: 1px solid var(--gray-200); border-radius: 20px; font-size: 13px; outline: none; }
+        .chat-input:focus { border-color: var(--navy-700); }
+        .chat-send-btn { width: 40px; height: 40px; background: var(--navy-700); border: none; border-radius: 50%; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .chat-send-btn svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+        /* Documents Screen */
+        .docs-header { padding: 0 0 14px; }
+        .docs-title { font-size: 18px; font-weight: 600; color: var(--navy-700); margin-bottom: 4px; }
+        .docs-subtitle { font-size: 12px; color: var(--gray-500); }
+        .ai-scanner { background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); border-radius: 12px; padding: 14px; margin-bottom: 14px; color: white; }
+        .ai-scanner-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .ai-scanner-icon { width: 32px; height: 32px; background: rgba(255,255,255,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .ai-scanner-icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .ai-scanner-title { font-weight: 600; font-size: 13px; }
+        .ai-scanner-desc { font-size: 11px; opacity: 0.8; margin-bottom: 10px; }
+        .ai-scanner-status { display: flex; align-items: center; justify-content: space-between; }
+        .ai-status { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+        .ai-status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; }
+        .ai-scan-btn { padding: 6px 14px; background: white; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--navy-700); cursor: pointer; }
+        .upload-zone { border: 2px dashed var(--gray-300); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 14px; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover { border-color: var(--navy-700); background: rgba(30,58,95,0.02); }
+        .upload-icon { width: 40px; height: 40px; margin: 0 auto 10px; background: var(--gray-100); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--gray-400); }
+        .upload-icon svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .upload-text { font-size: 12px; font-weight: 500; color: var(--gray-600); }
+        .upload-hint { font-size: 10px; color: var(--gray-400); margin-top: 4px; }
+        .doc-item { display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .doc-item-icon { width: 40px; height: 40px; background: rgba(59,130,246,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--info); }
+        .doc-item-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .doc-item-info { flex: 1; }
+        .doc-item-name { font-weight: 500; font-size: 12px; color: var(--gray-800); }
+        .doc-item-meta { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+        .doc-item-status { font-size: 9px; padding: 4px 8px; border-radius: 12px; font-weight: 600; }
+        .doc-item-status.verified { background: rgba(16,185,129,0.1); color: var(--success); }
+        .doc-item-status.pending { background: rgba(245,158,11,0.1); color: var(--warning); }
+
+        /* Profile Screen */
+        .profile-header { text-align: center; padding: 20px 0; }
+        .profile-avatar { width: 72px; height: 72px; margin: 0 auto 12px; background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; }
+        .profile-name { font-size: 18px; font-weight: 600; color: var(--gray-800); }
+        .profile-email { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+        .profile-menu { margin-top: 16px; }
+        .profile-menu-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: white; border-radius: 10px; margin-bottom: 8px; cursor: pointer; transition: all 0.2s; }
+        .profile-menu-item:hover { transform: translateX(4px); }
+        .profile-menu-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+        .profile-menu-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .profile-menu-icon.blue { background: rgba(59,130,246,0.1); color: var(--info); }
+        .profile-menu-icon.gold { background: rgba(196,160,82,0.1); color: var(--gold-500); }
+        .profile-menu-icon.green { background: rgba(16,185,129,0.1); color: var(--success); }
+        .profile-menu-icon.red { background: rgba(239,68,68,0.1); color: var(--danger); }
+        .profile-menu-text { flex: 1; font-size: 13px; font-weight: 500; color: var(--gray-700); }
+        .profile-menu-arrow { color: var(--gray-300); }
+        .profile-menu-arrow svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+        /* RON Video Call Screen */
+        .ron-header { background: var(--navy-800); padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; }
+        .ron-recording { display: flex; align-items: center; gap: 6px; color: white; font-size: 11px; font-weight: 500; }
+        .rec-dot { width: 8px; height: 8px; background: var(--danger); border-radius: 50%; animation: rec-blink 1s infinite; }
+        @keyframes rec-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .ron-title { color: white; font-size: 13px; font-weight: 600; }
+        .ron-timer { color: rgba(255,255,255,0.7); font-size: 11px; font-family: monospace; }
+        .video-container { position: relative; background: #1a1a2e; height: 180px; }
+        .main-video { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%); }
+        .notary-video { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .notary-video-avatar { width: 64px; height: 64px; background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 600; border: 3px solid rgba(255,255,255,0.2); }
+        .notary-video-name { color: white; font-size: 12px; font-weight: 500; }
+        .notary-video-role { color: rgba(255,255,255,0.6); font-size: 10px; }
+        .pip-video { position: absolute; bottom: 10px; right: 10px; width: 70px; height: 90px; background: linear-gradient(135deg, #3d3d5c 0%, #2d2d44 100%); border-radius: 10px; border: 2px solid rgba(255,255,255,0.3); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .pip-avatar { width: 36px; height: 36px; background: var(--gold-500); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; font-weight: 600; }
+        .pip-label { position: absolute; bottom: 4px; left: 0; right: 0; text-align: center; font-size: 8px; color: white; background: rgba(0,0,0,0.5); padding: 2px; }
+        .doc-viewer { flex: 1; background: white; display: flex; flex-direction: column; }
+        .doc-viewer-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--gray-100); }
+        .doc-viewer-title { font-size: 12px; font-weight: 600; color: var(--gray-700); }
+        .doc-page-num { font-size: 10px; color: var(--gray-500); background: var(--gray-100); padding: 4px 10px; border-radius: 12px; }
+        .doc-viewer-tools { display: flex; gap: 8px; }
+        .doc-tool-btn { width: 28px; height: 28px; border: 1px solid var(--gray-200); background: white; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--gray-500); cursor: pointer; }
+        .doc-tool-btn:hover { background: var(--gray-50); color: var(--navy-700); }
+        .doc-tool-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .doc-preview { flex: 1; padding: 14px; background: var(--gray-50); overflow-y: auto; }
+        .doc-page { background: white; border: 1px solid var(--gray-200); border-radius: 6px; padding: 16px; min-height: 160px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .doc-page-title { font-size: 12px; font-weight: 600; color: var(--gray-800); text-align: center; margin-bottom: 12px; }
+        .doc-page-text { font-size: 9px; color: var(--gray-500); line-height: 1.6; margin-bottom: 16px; }
+        .sign-here-box { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 14px; background: rgba(196,160,82,0.1); border: 2px dashed var(--gold-500); border-radius: 8px; cursor: pointer; transition: all 0.2s; animation: sign-pulse 2s infinite; }
+        .sign-here-box:hover { background: rgba(196,160,82,0.2); }
+        @keyframes sign-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(196,160,82,0.4); } 50% { box-shadow: 0 0 0 6px rgba(196,160,82,0); } }
+        .sign-here-icon { color: var(--gold-500); }
+        .sign-here-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .sign-here-text { font-size: 12px; font-weight: 600; color: var(--gold-500); }
+        .ron-controls { display: flex; justify-content: center; gap: 16px; padding: 14px; background: var(--navy-800); }
+        .control-btn { width: 48px; height: 48px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
+        .control-btn svg { width: 20px; height: 20px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .control-btn-default { background: rgba(255,255,255,0.15); color: white; }
+        .control-btn-default:hover { background: rgba(255,255,255,0.25); }
+        .control-btn-active { background: white; color: var(--navy-700); }
+        .control-btn-end { background: var(--danger); color: white; }
+        .control-btn-end:hover { background: #DC2626; }
+        .control-btn-sign { background: var(--gold-500); color: white; }
+        .control-btn-sign:hover { background: var(--gold-400); }
+
+        /* Auth Screens */
+        .auth-hero { background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-600) 100%); padding: 40px 20px 30px; text-align: center; color: white; }
+        .auth-logo { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .auth-logo span { color: var(--gold-500); font-weight: 400; }
+        .auth-tagline { font-size: 12px; opacity: 0.8; }
+        .auth-content { padding: 24px 20px; flex: 1; overflow-y: auto; }
+        .auth-title { font-size: 20px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; }
+        .auth-subtitle { font-size: 12px; color: var(--gray-500); margin-bottom: 20px; }
+        .form-group { margin-bottom: 14px; }
+        .form-label { display: block; font-size: 11px; font-weight: 600; color: var(--gray-600); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-input-wrap { position: relative; }
+        .form-input { width: 100%; padding: 12px 14px; padding-left: 42px; border: 1px solid var(--gray-200); border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: all 0.2s; }
+        .form-input:focus { border-color: var(--navy-700); box-shadow: 0 0 0 3px rgba(30,58,95,0.1); }
+        .form-input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-400); }
+        .form-input-icon svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .form-input-action { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--gray-400); cursor: pointer; background: none; border: none; }
+        .form-input-action svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .form-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .form-checkbox { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--gray-600); }
+        .form-checkbox input { width: 16px; height: 16px; accent-color: var(--navy-700); }
+        .form-link { font-size: 12px; color: var(--navy-700); font-weight: 500; text-decoration: none; }
+        .form-link:hover { text-decoration: underline; }
+        .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+        .divider-line { flex: 1; height: 1px; background: var(--gray-200); }
+        .divider-text { font-size: 11px; color: var(--gray-400); text-transform: uppercase; }
+        .social-buttons { display: flex; flex-direction: column; gap: 10px; }
+        .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px; border: 1px solid var(--gray-200); border-radius: 10px; background: white; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--gray-700); cursor: pointer; transition: all 0.2s; }
+        .social-btn:hover { background: var(--gray-50); border-color: var(--gray-300); }
+        .social-btn svg { width: 18px; height: 18px; }
+        .social-btn.google svg { width: 18px; height: 18px; }
+        .social-btn.apple svg { width: 18px; height: 18px; }
+        .auth-footer { text-align: center; padding: 16px; font-size: 12px; color: var(--gray-500); }
+        .auth-footer a { color: var(--navy-700); font-weight: 600; text-decoration: none; }
+        .auth-footer a:hover { text-decoration: underline; }
+        .lang-selector { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
+        .lang-btn { padding: 6px 12px; border: 1px solid var(--gray-200); background: white; border-radius: 6px; font-size: 11px; cursor: pointer; transition: all 0.2s; }
+        .lang-btn:hover { border-color: var(--navy-700); }
+        .lang-btn.active { background: var(--navy-700); color: white; border-color: var(--navy-700); }
+        .otp-inputs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        .otp-input { width: 48px; height: 56px; text-align: center; font-size: 22px; font-weight: 600; border: 2px solid var(--gray-200); border-radius: 10px; outline: none; }
+        .otp-input:focus { border-color: var(--navy-700); }
+        .resend-link { text-align: center; font-size: 12px; color: var(--gray-500); margin-top: 16px; }
+        .resend-link a { color: var(--navy-700); font-weight: 500; }
+
+        /* Payment Screen */
+        .payment-header { padding: 0 0 16px; }
+        .payment-title { font-size: 18px; font-weight: 600; color: var(--navy-700); }
+        .payment-subtitle { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+        .order-summary { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .order-summary-title { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 12px; }
+        .order-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; }
+        .order-item-label { font-size: 13px; color: var(--gray-600); }
+        .order-item-value { font-size: 13px; font-weight: 500; color: var(--gray-800); }
+        .order-item.discount .order-item-value { color: var(--success); }
+        .order-divider { height: 1px; background: var(--gray-100); margin: 8px 0; }
+        .order-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 0; }
+        .order-total-label { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+        .order-total-value { font-size: 18px; font-weight: 700; color: var(--navy-700); }
+        .payment-methods { margin-bottom: 14px; }
+        .payment-methods-title { font-size: 11px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 10px; }
+        .payment-method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+        .payment-method-btn { padding: 12px 8px; border: 2px solid var(--gray-200); background: white; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; }
+        .payment-method-btn:hover { border-color: var(--gray-300); }
+        .payment-method-btn.selected { border-color: var(--navy-700); background: rgba(30,58,95,0.05); }
+        .payment-method-btn svg { width: 24px; height: 24px; }
+        .payment-method-btn span { font-size: 9px; font-weight: 500; color: var(--gray-600); }
+        .card-form { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; border: 1px solid var(--gray-200); }
+        .card-input-group { margin-bottom: 12px; }
+        .card-input-group:last-child { margin-bottom: 0; }
+        .card-input-row { display: flex; gap: 10px; }
+        .card-input-row .card-input-group { flex: 1; margin-bottom: 0; }
+        .card-label { font-size: 10px; font-weight: 600; color: var(--gray-500); text-transform: uppercase; margin-bottom: 6px; display: block; }
+        .card-input { width: 100%; padding: 12px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 14px; font-family: inherit; }
+        .card-input:focus { outline: none; border-color: var(--navy-700); }
+        .card-input::placeholder { color: var(--gray-400); }
+        .card-icons { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; gap: 4px; }
+        .card-icon-img { height: 20px; opacity: 0.5; }
+        .promo-code { display: flex; gap: 8px; margin-bottom: 14px; }
+        .promo-input { flex: 1; padding: 12px; border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; }
+        .promo-btn { padding: 12px 16px; background: var(--gray-100); border: none; border-radius: 8px; font-size: 12px; font-weight: 600; color: var(--gray-600); cursor: pointer; }
+        .promo-btn:hover { background: var(--gray-200); }
+        .security-badges { display: flex; justify-content: center; gap: 16px; padding: 12px 0; margin-bottom: 10px; }
+        .security-badge { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--gray-500); }
+        .security-badge svg { width: 14px; height: 14px; stroke: var(--gray-400); stroke-width: 1.5; fill: none; }
+        .pay-btn { background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); color: white; font-size: 15px; font-weight: 600; padding: 16px; }
+        .pay-btn:hover { background: linear-gradient(135deg, var(--navy-600), var(--navy-700)); }
+
+        /* Acceptable ID Screen */
+        .id-list { margin-top: 14px; }
+        .id-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: white; border-radius: 10px; margin-bottom: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .id-item-icon { width: 36px; height: 36px; background: rgba(16,185,129,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--success); font-size: 16px; }
+        .id-item-text { font-size: 13px; font-weight: 500; color: var(--gray-700); }
+        .id-note { background: rgba(245,158,11,0.1); border-radius: 10px; padding: 12px; margin-top: 14px; display: flex; gap: 10px; }
+        .id-note-icon { color: var(--warning); flex-shrink: 0; }
+        .id-note-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .id-note-text { font-size: 11px; color: var(--gray-600); line-height: 1.5; }
+
+        /* Document Vault */
+        .vault-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+        .vault-tabs { display: flex; gap: 4px; background: var(--gray-100); padding: 4px; border-radius: 10px; }
+        .vault-tab { padding: 8px 14px; border: none; background: transparent; border-radius: 8px; font-size: 11px; font-weight: 500; color: var(--gray-500); cursor: pointer; }
+        .vault-tab.active { background: white; color: var(--navy-700); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .vault-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 14px; }
+        .vault-stat { background: white; border-radius: 10px; padding: 12px; text-align: center; }
+        .vault-stat-value { font-size: 18px; font-weight: 600; color: var(--navy-700); }
+        .vault-stat-label { font-size: 9px; color: var(--gray-500); text-transform: uppercase; margin-top: 2px; }
+        .vault-doc { background: white; border-radius: 12px; padding: 14px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
+        .vault-doc-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .vault-doc-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; }
+        .vault-doc-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .vault-doc-info { flex: 1; }
+        .vault-doc-name { font-weight: 600; font-size: 13px; color: var(--gray-800); }
+        .vault-doc-date { font-size: 10px; color: var(--gray-500); margin-top: 2px; }
+        .vault-doc-badge { display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: rgba(16,185,129,0.1); border-radius: 6px; font-size: 9px; font-weight: 600; color: var(--success); }
+        .vault-doc-badge svg { width: 10px; height: 10px; stroke: currentColor; stroke-width: 2; fill: none; }
+        .vault-doc-meta { display: flex; gap: 12px; margin-bottom: 10px; font-size: 10px; color: var(--gray-500); }
+        .vault-doc-actions { display: flex; gap: 8px; }
+        .vault-action-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 10px; border: 1px solid var(--gray-200); background: white; border-radius: 8px; font-size: 11px; font-weight: 500; color: var(--gray-600); cursor: pointer; }
+        .vault-action-btn:hover { background: var(--gray-50); border-color: var(--navy-700); color: var(--navy-700); }
+        .vault-action-btn svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+
+        /* Language Settings */
+        .lang-settings { background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; }
+        .lang-settings-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .lang-settings-icon { width: 36px; height: 36px; background: rgba(196,160,82,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--gold-500); }
+        .lang-settings-icon svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.5; fill: none; }
+        .lang-settings-title { font-weight: 600; font-size: 13px; color: var(--gray-800); }
+        .lang-settings-subtitle { font-size: 10px; color: var(--gray-500); }
+        .lang-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .lang-option { display: flex; align-items: center; gap: 10px; padding: 12px; border: 2px solid var(--gray-200); border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        .lang-option:hover { border-color: var(--gray-300); }
+        .lang-option.active { border-color: var(--gold-500); background: rgba(196,160,82,0.05); }
+        .lang-flag { font-size: 20px; }
+        .lang-name { font-size: 12px; font-weight: 500; color: var(--gray-700); }
+        .lang-native { font-size: 10px; color: var(--gray-500); }
+        .lang-check { margin-left: auto; color: var(--gold-500); display: none; }
+        .lang-option.active .lang-check { display: block; }
+        .lang-check svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none; }
+    </style>
+</head>
+<body>
+    <div class="platform-header">
+        <div class="platform-logo">CA <span>Signings</span></div>
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('gallery')">Gallery</button>
+            <button class="view-btn" onclick="setView('split')">Split View</button>
+            <button class="view-btn" onclick="setView('dashboard')">Dashboard</button>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            <span>Live Preview</span>
+        </div>
+    </div>
+
+    <!-- Gallery View -->
+    <div class="gallery-view active" id="galleryView">
+        <div class="gallery-title">CA Signings Mobile App</div>
+        <div class="gallery-subtitle">Consumer Portal - Interactive Mockup</div>
+        <div class="phone-grid" id="phoneGrid"></div>
+    </div>
+
+    <!-- Split View -->
+    <div class="split-view" id="splitView">
+        <div class="consumer-side">
+            <div class="phone-label">Consumer App</div>
+            <div class="phone" id="interactivePhone"></div>
+        </div>
+        <div class="dashboard-side" id="dashboardPanel"></div>
+    </div>
+
+    <script>
+    // SVG Icons
+    const icons = {
+        home: '<svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+        doc: '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        calendar: '<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',
+        chat: '<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+        user: '<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+        clock: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+        check: '<svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>',
+        arrow: '<svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>',
+        alert: '<svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+        globe: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
+        laptop: '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>',
+        pin: '<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>',
+        clipboard: '<svg viewBox="0 0 24 24"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>',
+        heart: '<svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+        file: '<svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>',
+        bolt: '<svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+        activity: '<svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>',
+        phone: '<svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>',
+        star: '<svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+        car: '<svg viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C1.4 11.3 1 12.1 1 13v3c0 .6.4 1 1 1h1"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>',
+        message: '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>',
+        upload: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+        send: '<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>',
+        settings: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+        shield: '<svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+        logout: '<svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+        image: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+        ai: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M20 12a8 8 0 1 1-8-8"/><circle cx="12" cy="12" r="3"/></svg>',
+        history: '<svg viewBox="0 0 24 24"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>',
+        video: '<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>',
+        videoOff: '<svg viewBox="0 0 24 24"><path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+        mic: '<svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+        micOff: '<svg viewBox="0 0 24 24"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>',
+        pen: '<svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>',
+        zoomIn: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>',
+        phoneOff: '<svg viewBox="0 0 24 24"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>',
+        mail: '<svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',
+        lock: '<svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+        eye: '<svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
+        eyeOff: '<svg viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>',
+        google: '<svg viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>',
+        apple: '<svg viewBox="0 0 24 24"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="currentColor"/></svg>',
+        creditCard: '<svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+        dollarSign: '<svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>',
+        tag: '<svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>',
+        percent: '<svg viewBox="0 0 24 24"><line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg>',
+        idCard: '<svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="8" cy="10" r="2"/><path d="M14 10h4"/><path d="M14 14h4"/><path d="M6 16c0-1.5 1-2 2-2s2 .5 2 2"/></svg>',
+        folder: '<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>',
+        archive: '<svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>',
+        download: '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+        share: '<svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>',
+        award: '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
+        languages: '<svg viewBox="0 0 24 24"><path d="M5 8l6 6"/><path d="M4 14l6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>',
+        more: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
+        building: '<svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/><path d="M12 14h.01"/></svg>',
+        hospital: '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M12 8v8"/><path d="M8 12h8"/></svg>',
+        search: '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>'
+    };
+
+    // Screen Templates
+    const screens = [
+        {
+            label: "1. Welcome",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="auth-hero" style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px 24px;">
+                        <div style="margin-bottom: 40px;">
+                            <div class="auth-logo">CA <span>Signings</span></div>
+                            <div class="auth-tagline">Notarized in minutes. Anywhere. Any language.</div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            <button class="btn btn-gold" style="background: var(--gold-500);">Create Account</button>
+                            <button class="btn" style="background: rgba(255,255,255,0.15); color: white; border: 1px solid rgba(255,255,255,0.3);">Sign In</button>
+                        </div>
+                        <div style="margin-top: 30px; display: flex; justify-content: center;">
+                            <div style="position: relative; width: 180px;">
+                                <select style="width: 100%; padding: 12px 16px; padding-right: 40px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); border-radius: 10px; color: white; font-size: 14px; font-family: inherit; appearance: none; cursor: pointer; outline: none;">
+                                    <option value="en" style="color: #333;">🇺🇸 English</option>
+                                    <option value="es" style="color: #333;">🇲🇽 Español</option>
+                                    <option value="zh" style="color: #333;">🇨🇳 中文</option>
+                                    <option value="ko" style="color: #333;">🇰🇷 한국어</option>
+                                    <option value="vi" style="color: #333;">🇻🇳 Tiếng Việt</option>
+                                    <option value="tl" style="color: #333;">🇵🇭 Tagalog</option>
+                                    <option value="ja" style="color: #333;">🇯🇵 日本語</option>
+                                    <option value="hi" style="color: #333;">🇮🇳 हिंदी</option>
+                                    <option value="ar" style="color: #333;">🇸🇦 العربية</option>
+                                </select>
+                                <div style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); pointer-events: none; color: white;">${icons.arrow}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "2. Sign Up",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="auth-hero" style="padding: 24px 20px 20px;">
+                        <div class="auth-logo">CA <span>Signings</span></div>
+                    </div>
+                    <div class="auth-content">
+                        <div class="auth-title">Create Account</div>
+                        <div class="auth-subtitle">Get started with CA Signings</div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.user}</span>
+                                <input type="text" class="form-input" placeholder="Enter your name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.mail}</span>
+                                <input type="email" class="form-input" placeholder="you@email.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.phone}</span>
+                                <input type="tel" class="form-input" placeholder="(909) 555-0000">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.lock}</span>
+                                <input type="password" class="form-input" placeholder="Create password">
+                                <button class="form-input-action">${icons.eye}</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="margin-top: 8px;">Create Account</button>
+                        <div class="divider"><div class="divider-line"></div><span class="divider-text">or</span><div class="divider-line"></div></div>
+                        <div class="social-buttons">
+                            <button class="social-btn google">${icons.google} Continue with Google</button>
+                            <button class="social-btn apple">${icons.apple} Continue with Apple</button>
+                        </div>
+                    </div>
+                    <div class="auth-footer">Already have an account? <a href="#">Sign In</a></div>
+                </div>`
+        },
+        {
+            label: "3. Sign In",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="auth-hero" style="padding: 24px 20px 20px;">
+                        <div class="auth-logo">CA <span>Signings</span></div>
+                    </div>
+                    <div class="auth-content">
+                        <div class="auth-title">Welcome Back</div>
+                        <div class="auth-subtitle">Sign in to your account</div>
+                        <div class="form-group">
+                            <label class="form-label">Email or Phone</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.mail}</span>
+                                <input type="text" class="form-input" placeholder="Enter email or phone" value="john@email.com">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <div class="form-input-wrap">
+                                <span class="form-input-icon">${icons.lock}</span>
+                                <input type="password" class="form-input" placeholder="Enter password" value="••••••••">
+                                <button class="form-input-action">${icons.eyeOff}</button>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <label class="form-checkbox"><input type="checkbox" checked> Remember me</label>
+                            <a href="#" class="form-link">Forgot password?</a>
+                        </div>
+                        <button class="btn btn-primary">Sign In</button>
+                        <div class="divider"><div class="divider-line"></div><span class="divider-text">or</span><div class="divider-line"></div></div>
+                        <div class="social-buttons">
+                            <button class="social-btn google">${icons.google} Continue with Google</button>
+                            <button class="social-btn apple">${icons.apple} Continue with Apple</button>
+                        </div>
+                    </div>
+                    <div class="auth-footer">Don't have an account? <a href="#">Sign Up</a></div>
+                </div>`
+        },
+        {
+            label: "4. Verify OTP",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Verify</div>
+                        <div style="width: 34px;"></div>
+                    </div>
+                    <div class="auth-content" style="text-align: center;">
+                        <div style="width: 64px; height: 64px; background: rgba(30,58,95,0.1); border-radius: 50%; margin: 20px auto; display: flex; align-items: center; justify-content: center; color: var(--navy-700);">
+                            ${icons.mail}
+                        </div>
+                        <div class="auth-title">Verify Your Identity</div>
+                        <div class="auth-subtitle">We sent a code to john@email.com</div>
+                        <div class="otp-inputs">
+                            <input type="text" class="otp-input" maxlength="1" value="4">
+                            <input type="text" class="otp-input" maxlength="1" value="7">
+                            <input type="text" class="otp-input" maxlength="1" value="2">
+                            <input type="text" class="otp-input" maxlength="1" value="">
+                        </div>
+                        <button class="btn btn-primary">Verify & Continue</button>
+                        <div class="resend-link">Didn't receive code? <a href="#">Resend</a></div>
+                        <div style="margin-top: 30px; padding: 14px; background: rgba(16,185,129,0.1); border-radius: 10px; text-align: left;">
+                            <div style="display: flex; align-items: center; gap: 10px; color: var(--success); font-size: 12px; font-weight: 500;">
+                                ${icons.shield}
+                                <span>Bank-level security protects your data</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "5. Home",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div class="app-logo">CA <span>Signings</span></div>
+                        <div class="header-btn">${icons.globe}</div>
+                    </div>
+                    <div class="content">
+                        <div style="background: linear-gradient(135deg, var(--navy-700), var(--navy-600)); margin: -18px -18px 18px; padding: 30px 18px; text-align: center; color: white;">
+                            <div style="font-size: 20px; font-weight: 700; margin-bottom: 8px;">Need a Notary NOW?</div>
+                            <div style="font-size: 12px; opacity: 0.8; margin-bottom: 20px;">Notarized in minutes. Anywhere. Any language.</div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <button class="btn btn-gold">Start Now ${icons.arrow}</button>
+                                <button class="btn" style="background: var(--danger); color: white;">${icons.alert} Emergency</button>
+                            </div>
+                        </div>
+                        <div class="service-grid">
+                            <div class="service-card"><div class="service-icon">${icons.doc}</div><div class="service-name">General Notary</div><div class="service-desc">POA, Wills, Affidavits</div></div>
+                            <div class="service-card"><div class="service-icon">${icons.home}</div><div class="service-name">Loan Signing</div><div class="service-desc">Purchase, Refi</div></div>
+                            <div class="service-card"><div class="service-icon">${icons.laptop}</div><div class="service-name">Remote (RON)</div><div class="service-desc">Video Notarization</div></div>
+                            <div class="service-card"><div class="service-icon">${icons.globe}</div><div class="service-name">Apostille</div><div class="service-desc">All 50 States</div></div>
+                            <div class="service-card"><div class="service-icon">${icons.car}</div><div class="service-name">Auto/DMV</div><div class="service-desc">Title Transfers</div></div>
+                            <div class="service-card"><div class="service-icon">${icons.pin}</div><div class="service-name">On-Site</div><div class="service-desc">We Come to You</div></div>
+                            <div class="service-card"><div class="service-icon" style="background: rgba(239,68,68,0.1); color: var(--danger);">${icons.building}</div><div class="service-name">Facility</div><div class="service-desc">Hospital, Jail, etc.</div></div>
+                            <div class="service-card"><div class="service-icon" style="background: var(--gray-200); color: var(--gray-600);">${icons.more}</div><div class="service-name">Other</div><div class="service-desc">Custom Request</div></div>
+                        </div>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item active"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.doc}</div><span>Docs</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.calendar}</div><span>Book</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "6. Dashboard",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div class="app-logo">CA <span>Signings</span></div>
+                        <div class="header-btn">${icons.user}</div>
+                    </div>
+                    <div class="content">
+                        <div class="greeting">Hi John! 👋</div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-icon">${icons.calendar}</div><div class="card-title">Upcoming Appointment</div></div>
+                            <div class="appt-date">Wednesday, Feb 12</div>
+                            <div class="appt-time">2:00 PM - 2:30 PM</div>
+                            <div class="appt-type">Power of Attorney Signing</div>
+                            <div class="countdown">${icons.clock}<span class="countdown-text">Starts in 23h 45m</span></div>
+                            <button class="btn btn-outline">View Details</button>
+                        </div>
+                        <div class="card">
+                            <div class="card-header"><div class="card-icon" style="background: rgba(16,185,129,0.1); color: var(--success);">${icons.check}</div><div class="card-title">Pre-Appointment Checklist</div></div>
+                            <div class="checklist-item complete"><span class="check-circle complete">✓</span>Documents uploaded</div>
+                            <div class="checklist-item complete"><span class="check-circle complete">✓</span>AI review complete</div>
+                            <div class="checklist-item complete"><span class="check-circle complete">✓</span>Payment confirmed</div>
+                            <div class="checklist-item pending"><span class="check-circle pending">○</span>Have your ID ready</div>
+                            <button class="btn btn-outline" style="margin-top: 10px; padding: 10px; font-size: 11px;">${icons.idCard} View Acceptable IDs</button>
+                        </div>
+                        <div style="margin-bottom: 14px;">
+                            <div class="service-card" style="padding: 14px; display: flex; align-items: center; gap: 12px; text-align: left;"><div class="service-icon" style="background: rgba(30,58,95,0.1); color: var(--navy-700);">${icons.archive}</div><div><div class="service-name">Document Vault</div><div class="service-desc">8 Notarized Documents</div></div></div>
+                        </div>
+                        <button class="btn btn-primary">+ Book New Appointment</button>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item active"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.doc}</div><span>Docs</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.calendar}</div><span>Book</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "7. Service Selection",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">New Request</div>
+                        <div class="header-btn">${icons.chat}</div>
+                    </div>
+                    <div class="content">
+                        <div class="progress-bar"><div class="progress-seg complete"></div><div class="progress-seg current"></div><div class="progress-seg"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+                        <div class="form-title">What do you need notarized?</div>
+                        <div class="option-card selected"><div class="option-icon">${icons.doc}</div><div class="option-info"><div class="option-title">General Notary</div><div class="option-desc">Standard document notarization</div></div></div>
+                        <div class="option-card"><div class="option-icon">${icons.clipboard}</div><div class="option-info"><div class="option-title">Power of Attorney</div><div class="option-desc">Grant authority to act on your behalf</div></div></div>
+                        <div class="option-card"><div class="option-icon">${icons.heart}</div><div class="option-info"><div class="option-title">Healthcare Directive</div><div class="option-desc">Medical decisions & end-of-life wishes</div></div></div>
+                        <div class="option-card"><div class="option-icon">${icons.file}</div><div class="option-info"><div class="option-title">Affidavit</div><div class="option-desc">Sworn written statement</div></div></div>
+                        <div class="option-card"><div class="option-icon">${icons.home}</div><div class="option-info"><div class="option-title">Real Estate Document</div><div class="option-desc">Deed, title, property docs</div></div></div>
+                        <button class="btn btn-primary" style="margin-top: 16px;">Continue ${icons.arrow}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "8. Urgency",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">New Request</div>
+                        <div class="header-btn">${icons.chat}</div>
+                    </div>
+                    <div class="content">
+                        <div class="progress-bar"><div class="progress-seg complete"></div><div class="progress-seg complete"></div><div class="progress-seg current"></div><div class="progress-seg"></div><div class="progress-seg"></div></div>
+                        <div class="form-title">How urgent is this?</div>
+                        <div class="option-card"><div class="option-icon">${icons.alert}</div><div class="option-info"><div class="option-title">EMERGENCY - Within 2 Hours</div><div class="option-desc">Hospital, jail, time-critical</div><div class="option-fee">+$50 rush fee</div></div></div>
+                        <div class="option-card selected"><div class="option-icon">${icons.bolt}</div><div class="option-info"><div class="option-title">Same Day - Within 8 Hours</div><div class="option-desc">Need it done today</div><div class="option-fee">+$25 same-day fee</div></div></div>
+                        <div class="option-card"><div class="option-icon">${icons.calendar}</div><div class="option-info"><div class="option-title">Next Business Day</div><div class="option-desc">Standard scheduling</div></div></div>
+                        <button class="btn btn-primary" style="margin-top: 16px;">Continue ${icons.arrow}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "9. Schedule",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Select Time</div>
+                        <div class="header-btn">${icons.chat}</div>
+                    </div>
+                    <div class="content">
+                        <div style="display: flex; justify-content: center; margin-bottom: 12px;">
+                            <div style="display: flex; background: var(--gray-100); padding: 3px; border-radius: 8px;">
+                                <button style="padding: 6px 16px; border: none; background: transparent; border-radius: 6px; font-size: 11px; font-weight: 500; color: var(--gray-500); cursor: pointer;">Week</button>
+                                <button style="padding: 6px 16px; border: none; background: white; border-radius: 6px; font-size: 11px; font-weight: 600; color: var(--navy-700); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">Month</button>
+                            </div>
+                        </div>
+                        <div class="calendar-header"><div class="calendar-month">February 2026</div><div class="calendar-nav"><button>◀</button><button>▶</button></div></div>
+                        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; margin-bottom: 12px; text-align: center;">
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">SUN</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">MON</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">TUE</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">WED</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">THU</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">FRI</div>
+                            <div style="font-size: 9px; color: var(--gray-400); padding: 4px;">SAT</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">1</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">2</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">3</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">4</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">5</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">6</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">7</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">8</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">9</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">10</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">11</div>
+                            <div style="font-size: 11px; color: white; padding: 6px; background: var(--navy-700); border-radius: 6px; font-weight: 600;">12</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">13</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">14</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">15</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">16</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">17</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">18</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">19</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px; background: rgba(16,185,129,0.15); border-radius: 6px;">20</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">21</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">22</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">23</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">24</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">25</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">26</div>
+                            <div style="font-size: 11px; color: var(--gray-700); padding: 6px;">27</div>
+                            <div style="font-size: 11px; color: var(--gray-300); padding: 6px;">28</div>
+                        </div>
+                        <div style="display: flex; gap: 12px; font-size: 9px; color: var(--gray-500); margin-bottom: 12px; justify-content: center;">
+                            <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: rgba(16,185,129,0.15); border-radius: 3px;"></span> Available</div>
+                            <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: var(--navy-700); border-radius: 3px;"></span> Selected</div>
+                            <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background: var(--gray-200); border-radius: 3px;"></span> Unavailable</div>
+                        </div>
+                        <div class="time-section"><div class="time-label">Morning</div><div class="time-grid"><div class="time-slot">9:00 AM</div><div class="time-slot">10:00 AM</div><div class="time-slot">11:00 AM</div></div></div>
+                        <div class="time-section"><div class="time-label">Afternoon</div><div class="time-grid"><div class="time-slot">1:00 PM</div><div class="time-slot selected">2:00 PM</div><div class="time-slot">3:00 PM</div></div></div>
+                        <button class="btn btn-primary">Confirm Time ${icons.arrow}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "10. Payment",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Payment</div>
+                        <div class="header-btn">${icons.shield}</div>
+                    </div>
+                    <div class="content">
+                        <div class="payment-header">
+                            <div class="payment-title">Complete Payment</div>
+                            <div class="payment-subtitle">Secure checkout</div>
+                        </div>
+
+                        <div class="order-summary">
+                            <div class="order-summary-title">Order Summary</div>
+                            <div class="order-item">
+                                <span class="order-item-label">Power of Attorney Notarization</span>
+                                <span class="order-item-value">$15.00</span>
+                            </div>
+                            <div class="order-item">
+                                <span class="order-item-label">Travel Fee (Rancho Cucamonga)</span>
+                                <span class="order-item-value">$50.00</span>
+                            </div>
+                            <div class="order-item">
+                                <span class="order-item-label">Same-Day Service</span>
+                                <span class="order-item-value">$25.00</span>
+                            </div>
+                            <div class="order-item discount">
+                                <span class="order-item-label">First-Time Discount (10%)</span>
+                                <span class="order-item-value">-$9.00</span>
+                            </div>
+                            <div class="order-divider"></div>
+                            <div class="order-total">
+                                <span class="order-total-label">Total</span>
+                                <span class="order-total-value">$81.00</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-methods">
+                            <div class="payment-methods-title">Payment Method</div>
+                            <div class="payment-method-grid">
+                                <button class="payment-method-btn selected">
+                                    ${icons.creditCard}
+                                    <span>Card</span>
+                                </button>
+                                <button class="payment-method-btn">
+                                    ${icons.apple}
+                                    <span>Apple Pay</span>
+                                </button>
+                                <button class="payment-method-btn">
+                                    ${icons.google}
+                                    <span>Google Pay</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="card-form">
+                            <div class="card-input-group">
+                                <label class="card-label">Card Number</label>
+                                <input type="text" class="card-input" placeholder="1234 5678 9012 3456" value="4242 4242 4242 4242">
+                            </div>
+                            <div class="card-input-row">
+                                <div class="card-input-group">
+                                    <label class="card-label">Expiry</label>
+                                    <input type="text" class="card-input" placeholder="MM/YY" value="12/28">
+                                </div>
+                                <div class="card-input-group">
+                                    <label class="card-label">CVV</label>
+                                    <input type="text" class="card-input" placeholder="123" value="***">
+                                </div>
+                            </div>
+                            <div class="card-input-group" style="margin-top: 12px;">
+                                <label class="card-label">Name on Card</label>
+                                <input type="text" class="card-input" placeholder="John Doe" value="John Doe">
+                            </div>
+                        </div>
+
+                        <div class="promo-code">
+                            <input type="text" class="promo-input" placeholder="Promo code">
+                            <button class="promo-btn">Apply</button>
+                        </div>
+
+                        <div class="security-badges">
+                            <div class="security-badge">${icons.shield} SSL Secured</div>
+                            <div class="security-badge">${icons.lock} Encrypted</div>
+                            <div class="security-badge">${icons.check} PCI Compliant</div>
+                        </div>
+
+                        <div style="background: rgba(245,158,11,0.1); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; display: flex; gap: 8px; align-items: flex-start;">
+                            <div style="color: var(--warning); flex-shrink: 0;">${icons.alert}</div>
+                            <div style="font-size: 10px; color: var(--gray-600); line-height: 1.4;">
+                                <strong>Price Disclaimer:</strong> Final price may vary based on document count, travel distance, or after-hours service. Any changes will be confirmed before signing.
+                            </div>
+                        </div>
+
+                        <button class="btn pay-btn">${icons.lock} Pay $81.00</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "11. Confirmed",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div class="app-logo">CA <span>Signings</span></div>
+                        <div class="header-btn">✕</div>
+                    </div>
+                    <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+                        <div class="success-icon">${icons.check}</div>
+                        <div class="success-title">CONFIRMED!</div>
+                        <div class="success-subtitle">Your appointment is booked</div>
+                        <div class="confirm-details">
+                            <div class="detail-row"><span class="detail-label">Service</span><span class="detail-value">Power of Attorney</span></div>
+                            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">Wed, Feb 12, 2026</span></div>
+                            <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">2:00 PM</span></div>
+                            <div class="detail-row"><span class="detail-label">Location</span><span class="detail-value">Mobile - Your Location</span></div>
+                            <div class="detail-row"><span class="detail-label">Total</span><span class="detail-value">$65.00</span></div>
+                        </div>
+                        <div style="margin-top: 20px;">
+                            <div style="font-size: 11px; font-weight: 600; color: var(--gray-500); text-align: center; margin-bottom: 10px;">ADD TO CALENDAR</div>
+                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                <button style="flex: 1; padding: 12px 8px; border: 1px solid var(--gray-200); background: white; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0z" fill="#4285F4"/><path d="M12 4.8v6.4h6.4c-.352 3.552-3.248 6.4-6.8 6.4-3.76 0-6.8-3.04-6.8-6.8s3.04-6.8 6.8-6.8c1.68 0 3.2.608 4.4 1.6l2.4-2.4C16.48 1.76 14.4.8 12 .8 5.816.8.8 5.816.8 12s5.016 11.2 11.2 11.2S23.2 18.184 23.2 12H12z" fill="#fff"/></svg>
+                                    <span style="font-size: 9px; color: var(--gray-600);">Google</span>
+                                </button>
+                                <button style="flex: 1; padding: 12px 8px; border: 1px solid var(--gray-200); background: white; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83" fill="#000"/><path d="M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" fill="#000"/></svg>
+                                    <span style="font-size: 9px; color: var(--gray-600);">Apple</span>
+                                </button>
+                                <button style="flex: 1; padding: 12px 8px; border: 1px solid var(--gray-200); background: white; border-radius: 10px; display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M0 0h11.5v11.5H0V0z" fill="#F25022"/><path d="M12.5 0H24v11.5H12.5V0z" fill="#7FBA00"/><path d="M0 12.5h11.5V24H0V12.5z" fill="#00A4EF"/><path d="M12.5 12.5H24V24H12.5V12.5z" fill="#FFB900"/></svg>
+                                    <span style="font-size: 9px; color: var(--gray-600);">Outlook</span>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="btn btn-outline" style="margin-top: 14px;">Done</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "12. Tracking",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="tracking-header">
+                        <div class="tracking-title">Your Notary is On The Way</div>
+                        <div class="tracking-subtitle">Appointment #CA-2026-1847</div>
+                    </div>
+                    <div class="tracking-map">
+                        <div class="map-grid"></div>
+                        <div class="map-route"></div>
+                        <div class="map-car">${icons.car}</div>
+                        <div class="map-eta">${icons.clock} 8 min away</div>
+                    </div>
+                    <div class="progress-tracker">
+                        <div class="progress-tracker-header">
+                            <div class="progress-tracker-title">Signing Progress</div>
+                            <div class="progress-status-badge">En Route</div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="progress-line-fill" style="width: 25%;"></div>
+                            <div class="progress-step"><div class="step-icon complete">${icons.check}</div><div class="step-label">Scheduled</div></div>
+                            <div class="progress-step"><div class="step-icon active">${icons.car}</div><div class="step-label active">En Route</div></div>
+                            <div class="progress-step"><div class="step-icon">${icons.pin}</div><div class="step-label">Arrived</div></div>
+                            <div class="progress-step"><div class="step-icon">${icons.file}</div><div class="step-label">Signing</div></div>
+                            <div class="progress-step"><div class="step-icon">${icons.check}</div><div class="step-label">Complete</div></div>
+                        </div>
+                    </div>
+                    <div class="notary-card">
+                        <div class="notary-card-header">
+                            <div class="notary-card-icon">${icons.user}</div>
+                            <div class="notary-card-title">Your Notary</div>
+                        </div>
+                        <div class="notary-info">
+                            <div class="notary-avatar">JD</div>
+                            <div class="notary-details">
+                                <div class="notary-name">Jane Davis</div>
+                                <div class="notary-rating">${icons.star} 4.9 (127 reviews)</div>
+                            </div>
+                            <div class="notary-actions">
+                                <button class="notary-action-btn">${icons.phone}</button>
+                                <button class="notary-action-btn">${icons.message}</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding: 0 14px 14px;">
+                        <button class="btn btn-outline">Cancel Appointment</button>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item active"><div class="nav-icon">${icons.pin}</div><span>Track</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.doc}</div><span>Docs</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "13. Chat",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="chat-header">
+                        <div class="chat-avatar">${icons.chat}</div>
+                        <div class="chat-info">
+                            <div class="chat-name">CA Signings Assistant <span class="ai-badge">AI</span></div>
+                            <div class="chat-status"><span class="online-dot"></span> Online</div>
+                        </div>
+                        <div class="header-btn">${icons.phone}</div>
+                    </div>
+                    <div class="chat-messages">
+                        <div class="chat-message bot">
+                            <div class="chat-bubble">Hello! I'm your CA Signings assistant. How can I help you today?</div>
+                            <div class="chat-time">9:30 AM</div>
+                            <div class="quick-replies">
+                                <span class="quick-reply">Book appointment</span>
+                                <span class="quick-reply">Check pricing</span>
+                                <span class="quick-reply">Track notary</span>
+                            </div>
+                        </div>
+                        <div class="chat-message user">
+                            <div class="chat-bubble">I need to get a power of attorney notarized today</div>
+                            <div class="chat-time">9:31 AM</div>
+                        </div>
+                        <div class="chat-message bot">
+                            <div class="chat-bubble">I can help with that! For a Power of Attorney, we offer same-day service. Our next available slot is today at 2:00 PM. Would you like me to book that for you?</div>
+                            <div class="chat-time">9:31 AM</div>
+                            <div class="quick-replies">
+                                <span class="quick-reply">Yes, book it</span>
+                                <span class="quick-reply">See other times</span>
+                                <span class="quick-reply">What's the cost?</span>
+                            </div>
+                        </div>
+                        <div class="chat-message user">
+                            <div class="chat-bubble">What's the cost?</div>
+                            <div class="chat-time">9:32 AM</div>
+                        </div>
+                        <div class="chat-message bot">
+                            <div class="chat-bubble">For a Power of Attorney notarization:<br><br>• Notary fee: $15/signature<br>• Travel fee: $50<br>• Same-day fee: +$25<br><br><strong>Total: ~$90</strong><br><br>This includes travel to your location.</div>
+                            <div class="chat-time">9:32 AM</div>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" placeholder="Type a message...">
+                        <button class="chat-send-btn">${icons.send}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "14. Documents",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div class="app-logo">CA <span>Signings</span></div>
+                        <div class="header-btn">${icons.user}</div>
+                    </div>
+                    <div class="content">
+                        <div class="docs-header">
+                            <div class="docs-title">My Documents</div>
+                            <div class="docs-subtitle">Manage and upload your files</div>
+                        </div>
+                        <div class="ai-scanner">
+                            <div class="ai-scanner-header">
+                                <div class="ai-scanner-icon">${icons.ai}</div>
+                                <div class="ai-scanner-title">AI Document Assistant</div>
+                            </div>
+                            <div class="ai-scanner-desc">Auto-check for errors, missing signatures, and formatting issues.</div>
+                            <div class="ai-scanner-status">
+                                <div class="ai-status"><span class="ai-status-dot"></span> Ready to scan</div>
+                                <button class="ai-scan-btn">Scan Docs</button>
+                            </div>
+                        </div>
+                        <div class="upload-zone">
+                            <div class="upload-icon">${icons.upload}</div>
+                            <div class="upload-text">Tap to upload documents</div>
+                            <div class="upload-hint">PDF, JPG, PNG up to 10MB</div>
+                        </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon">${icons.doc}</div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Power_of_Attorney.pdf</div>
+                                <div class="doc-item-meta">2.4 MB • Feb 11, 2026</div>
+                            </div>
+                            <div class="doc-item-status verified">Verified</div>
+                        </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon" style="background: rgba(16,185,129,0.1); color: var(--success);">${icons.image}</div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Drivers_License.jpg</div>
+                                <div class="doc-item-meta">1.8 MB • Feb 10, 2026</div>
+                            </div>
+                            <div class="doc-item-status verified">Verified</div>
+                        </div>
+                        <div class="doc-item">
+                            <div class="doc-item-icon" style="background: rgba(245,158,11,0.1); color: var(--warning);">${icons.file}</div>
+                            <div class="doc-item-info">
+                                <div class="doc-item-name">Healthcare_Directive.pdf</div>
+                                <div class="doc-item-meta">3.1 MB • Feb 9, 2026</div>
+                            </div>
+                            <div class="doc-item-status pending">Pending Review</div>
+                        </div>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.pin}</div><span>Track</span></div>
+                        <div class="nav-item active"><div class="nav-icon">${icons.doc}</div><span>Docs</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "15. Profile",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Profile</div>
+                        <div class="header-btn">${icons.settings}</div>
+                    </div>
+                    <div class="content">
+                        <div class="profile-header">
+                            <div class="profile-avatar">JD</div>
+                            <div class="profile-name">John Doe</div>
+                            <div class="profile-email">john.doe@email.com</div>
+                        </div>
+                        <div class="profile-menu">
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon blue">${icons.doc}</div>
+                                <div class="profile-menu-text">My Documents</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon gold">${icons.history}</div>
+                                <div class="profile-menu-text">Appointment History</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon gold">${icons.calendar}</div>
+                                <div class="profile-menu-text">Saved Addresses</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon green">${icons.shield}</div>
+                                <div class="profile-menu-text">Privacy & Security</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon gold">${icons.languages}</div>
+                                <div class="profile-menu-text">Language</div>
+                                <div style="font-size: 11px; color: var(--gray-500); margin-left: auto; margin-right: 8px;">English</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon blue">${icons.settings}</div>
+                                <div class="profile-menu-text">Settings</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                            <div class="profile-menu-item">
+                                <div class="profile-menu-icon red">${icons.logout}</div>
+                                <div class="profile-menu-text">Sign Out</div>
+                                <div class="profile-menu-arrow">${icons.arrow}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.pin}</div><span>Track</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.doc}</div><span>Docs</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "16. Acceptable ID",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Acceptable ID</div>
+                        <div style="width: 34px;"></div>
+                    </div>
+                    <div class="content">
+                        <div class="card" style="text-align: center; padding: 20px;">
+                            <div style="width: 56px; height: 56px; background: rgba(30,58,95,0.1); border-radius: 50%; margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; color: var(--navy-700);">
+                                ${icons.idCard}
+                            </div>
+                            <div style="font-size: 16px; font-weight: 600; color: var(--navy-700); margin-bottom: 4px;">Valid Photo ID Required</div>
+                            <div style="font-size: 12px; color: var(--gray-500);">Bring one of the following to your appointment</div>
+                        </div>
+
+                        <div class="id-list">
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">California Driver License or ID</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">Out-of-State Driver License or ID</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">U.S. Passport or Passport Card</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">Foreign Passport</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">U.S. Military ID</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">Tribal ID Card</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">Government Employee ID</div></div>
+                            <div class="id-item"><div class="id-item-icon">✓</div><div class="id-item-text">CA State Prison Inmate ID</div></div>
+                        </div>
+
+                        <div class="id-note">
+                            <div class="id-note-icon">${icons.alert}</div>
+                            <div class="id-note-text"><strong>Important:</strong> ID must be current (not expired), contain a photo, physical description, and signature. Two forms of secondary ID may be accepted in some cases.</div>
+                        </div>
+
+                        <button class="btn btn-primary" style="margin-top: 14px;">Got It</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "17. Document Vault",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div class="app-logo">CA <span>Signings</span></div>
+                        <div class="header-btn">${icons.user}</div>
+                    </div>
+                    <div class="content">
+                        <div class="vault-header">
+                            <div style="font-size: 18px; font-weight: 600; color: var(--navy-700);">Document Vault</div>
+                            <div class="vault-tabs">
+                                <button class="vault-tab active">All</button>
+                                <button class="vault-tab">Notarized</button>
+                                <button class="vault-tab">Pending</button>
+                            </div>
+                        </div>
+
+                        <div class="vault-stats">
+                            <div class="vault-stat"><div class="vault-stat-value">12</div><div class="vault-stat-label">Total Docs</div></div>
+                            <div class="vault-stat"><div class="vault-stat-value">8</div><div class="vault-stat-label">Notarized</div></div>
+                            <div class="vault-stat"><div class="vault-stat-value">2</div><div class="vault-stat-label">Pending</div></div>
+                        </div>
+
+                        <div class="vault-doc">
+                            <div class="vault-doc-header">
+                                <div class="vault-doc-icon">${icons.award}</div>
+                                <div class="vault-doc-info">
+                                    <div class="vault-doc-name">Power of Attorney</div>
+                                    <div class="vault-doc-date">Notarized Feb 12, 2026</div>
+                                </div>
+                                <div class="vault-doc-badge">${icons.check} Certified</div>
+                            </div>
+                            <div class="vault-doc-meta">
+                                <span>Notary: Jane Davis</span>
+                                <span>•</span>
+                                <span>Commission #2345678</span>
+                            </div>
+                            <div class="vault-doc-actions">
+                                <button class="vault-action-btn">${icons.eye} View</button>
+                                <button class="vault-action-btn">${icons.download} Download</button>
+                                <button class="vault-action-btn">${icons.share} Share</button>
+                            </div>
+                        </div>
+
+                        <div class="vault-doc">
+                            <div class="vault-doc-header">
+                                <div class="vault-doc-icon" style="background: linear-gradient(135deg, var(--success), #059669);">${icons.shield}</div>
+                                <div class="vault-doc-info">
+                                    <div class="vault-doc-name">Healthcare Directive</div>
+                                    <div class="vault-doc-date">Notarized Jan 28, 2026</div>
+                                </div>
+                                <div class="vault-doc-badge">${icons.check} Certified</div>
+                            </div>
+                            <div class="vault-doc-meta">
+                                <span>Notary: Jane Davis</span>
+                                <span>•</span>
+                                <span>Commission #2345678</span>
+                            </div>
+                            <div class="vault-doc-actions">
+                                <button class="vault-action-btn">${icons.eye} View</button>
+                                <button class="vault-action-btn">${icons.download} Download</button>
+                                <button class="vault-action-btn">${icons.share} Share</button>
+                            </div>
+                        </div>
+
+                        <div class="vault-doc">
+                            <div class="vault-doc-header">
+                                <div class="vault-doc-icon" style="background: linear-gradient(135deg, var(--gold-500), var(--gold-400));">${icons.home}</div>
+                                <div class="vault-doc-info">
+                                    <div class="vault-doc-name">Deed of Trust</div>
+                                    <div class="vault-doc-date">Notarized Dec 15, 2025</div>
+                                </div>
+                                <div class="vault-doc-badge">${icons.check} Certified</div>
+                            </div>
+                            <div class="vault-doc-meta">
+                                <span>Notary: Michael Chen</span>
+                                <span>•</span>
+                                <span>Commission #1234567</span>
+                            </div>
+                            <div class="vault-doc-actions">
+                                <button class="vault-action-btn">${icons.eye} View</button>
+                                <button class="vault-action-btn">${icons.download} Download</button>
+                                <button class="vault-action-btn">${icons.share} Share</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="nav-bar">
+                        <div class="nav-item"><div class="nav-icon">${icons.home}</div><span>Home</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.pin}</div><span>Track</span></div>
+                        <div class="nav-item active"><div class="nav-icon">${icons.archive}</div><span>Vault</span></div>
+                        <div class="nav-item"><div class="nav-icon">${icons.chat}</div><span>Chat</span></div>
+                    </div>
+                </div>`
+        },
+        {
+            label: "18. Language",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="color: white; font-size: 18px;">←</div>
+                        <div class="app-logo">Language</div>
+                        <div style="width: 34px;"></div>
+                    </div>
+                    <div class="content">
+                        <div class="lang-settings">
+                            <div class="lang-settings-header">
+                                <div class="lang-settings-icon">${icons.languages}</div>
+                                <div>
+                                    <div class="lang-settings-title">App Language</div>
+                                    <div class="lang-settings-subtitle">Choose your preferred language</div>
+                                </div>
+                            </div>
+                            <div class="lang-grid">
+                                <div class="lang-option active">
+                                    <div class="lang-flag">🇺🇸</div>
+                                    <div>
+                                        <div class="lang-name">English</div>
+                                        <div class="lang-native">English</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                                <div class="lang-option">
+                                    <div class="lang-flag">🇲🇽</div>
+                                    <div>
+                                        <div class="lang-name">Spanish</div>
+                                        <div class="lang-native">Español</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                                <div class="lang-option">
+                                    <div class="lang-flag">🇨🇳</div>
+                                    <div>
+                                        <div class="lang-name">Chinese</div>
+                                        <div class="lang-native">中文</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                                <div class="lang-option">
+                                    <div class="lang-flag">🇰🇷</div>
+                                    <div>
+                                        <div class="lang-name">Korean</div>
+                                        <div class="lang-native">한국어</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                                <div class="lang-option">
+                                    <div class="lang-flag">🇻🇳</div>
+                                    <div>
+                                        <div class="lang-name">Vietnamese</div>
+                                        <div class="lang-native">Tiếng Việt</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                                <div class="lang-option">
+                                    <div class="lang-flag">🇵🇭</div>
+                                    <div>
+                                        <div class="lang-name">Tagalog</div>
+                                        <div class="lang-native">Filipino</div>
+                                    </div>
+                                    <div class="lang-check">${icons.check}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                <div style="color: var(--info);">${icons.globe}</div>
+                                <div style="font-weight: 600; font-size: 13px; color: var(--gray-700);">Multilingual Support</div>
+                            </div>
+                            <div style="font-size: 12px; color: var(--gray-500); line-height: 1.5;">
+                                Your language selection applies to the entire app including notifications, documents, and customer support. Our notaries can assist in multiple languages.
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 13px; color: var(--gray-700);">Document Translation</div>
+                                    <div style="font-size: 11px; color: var(--gray-500); margin-top: 2px;">AI-powered translation for documents</div>
+                                </div>
+                                <div style="width: 44px; height: 24px; background: var(--success); border-radius: 12px; position: relative;">
+                                    <div style="width: 20px; height: 20px; background: white; border-radius: 50%; position: absolute; top: 2px; right: 2px;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="margin-top: 14px;">Save Preferences</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "19. RON Video Call",
+            content: `
+                <div class="screen" style="background: var(--navy-900);">
+                    <div class="status-bar" style="background: var(--navy-800);"><span>9:41</span><span>5G</span></div>
+                    <div class="ron-header">
+                        <div class="ron-recording"><span class="rec-dot"></span> REC</div>
+                        <div class="ron-title">Remote Notarization</div>
+                        <div class="ron-timer">12:34</div>
+                    </div>
+                    <div class="video-container">
+                        <div class="main-video">
+                            <div class="notary-video">
+                                <div class="notary-video-avatar">JD</div>
+                                <div class="notary-video-name">Jane Davis</div>
+                                <div class="notary-video-role">Certified Notary Public</div>
+                            </div>
+                        </div>
+                        <div class="pip-video">
+                            <div class="pip-avatar">ME</div>
+                            <div class="pip-label">You</div>
+                        </div>
+                    </div>
+                    <div class="doc-viewer">
+                        <div class="doc-viewer-header">
+                            <div class="doc-viewer-title">Power of Attorney</div>
+                            <div class="doc-viewer-tools">
+                                <button class="doc-tool-btn">${icons.zoomIn}</button>
+                            </div>
+                            <div class="doc-page-num">Page 3 of 5</div>
+                        </div>
+                        <div class="doc-preview">
+                            <div class="doc-page">
+                                <div class="doc-page-title">DURABLE POWER OF ATTORNEY</div>
+                                <div class="doc-page-text">
+                                    I, John Doe, hereby appoint Jane Smith as my attorney-in-fact to act on my behalf in all matters...<br><br>
+                                    This power of attorney shall not be affected by my subsequent disability or incapacity...
+                                </div>
+                                <div class="sign-here-box">
+                                    <div class="sign-here-icon">${icons.pen}</div>
+                                    <div class="sign-here-text">TAP TO SIGN HERE</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ron-controls">
+                        <button class="control-btn control-btn-active">${icons.mic}</button>
+                        <button class="control-btn control-btn-default">${icons.video}</button>
+                        <button class="control-btn control-btn-sign">${icons.pen}</button>
+                        <button class="control-btn control-btn-end">${icons.phoneOff}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "20. Facility Select",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="header-btn" style="background: transparent;">${icons.arrow}</div>
+                            <div class="app-logo">Facility Notary</div>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div class="form-title" style="text-align: left; font-size: 16px; margin-bottom: 6px;">Select Facility Type</div>
+                        <p style="font-size: 11px; color: var(--gray-500); margin-bottom: 16px;">We provide notary services at hospitals, jails, nursing homes, and more.</p>
+
+                        <div class="option-card selected">
+                            <div class="option-icon">${icons.hospital}</div>
+                            <div class="option-info">
+                                <div class="option-title">Hospital / Medical Center</div>
+                                <div class="option-desc">Emergency rooms, patient rooms, ICU</div>
+                            </div>
+                        </div>
+                        <div class="option-card">
+                            <div class="option-icon">${icons.heart}</div>
+                            <div class="option-info">
+                                <div class="option-title">Nursing Home / Assisted Living</div>
+                                <div class="option-desc">Senior care facilities, memory care</div>
+                            </div>
+                        </div>
+                        <div class="option-card">
+                            <div class="option-icon">${icons.shield}</div>
+                            <div class="option-info">
+                                <div class="option-title">Jail / Correctional Facility</div>
+                                <div class="option-desc">County jails, state prisons, detention centers</div>
+                            </div>
+                        </div>
+                        <div class="option-card">
+                            <div class="option-icon">${icons.activity}</div>
+                            <div class="option-info">
+                                <div class="option-title">Rehab / Recovery Center</div>
+                                <div class="option-desc">Rehabilitation and treatment facilities</div>
+                            </div>
+                        </div>
+                        <div class="option-card">
+                            <div class="option-icon" style="background: var(--gray-200); color: var(--gray-600);">${icons.more}</div>
+                            <div class="option-info">
+                                <div class="option-title">Other Facility</div>
+                                <div class="option-desc">Military base, embassy, school, etc.</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 16px;">
+                            <div class="form-label">Search Facility</div>
+                            <div class="form-input-wrap">
+                                <div class="form-input-icon">${icons.search}</div>
+                                <input type="text" class="form-input" placeholder="Type facility name or city..." value="Kaiser Permanente">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 10px; background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); overflow: hidden;">
+                            <div style="padding: 12px 14px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 10px; cursor: pointer; background: rgba(196,160,82,0.05);">
+                                <div style="width: 32px; height: 32px; background: rgba(16,185,129,0.1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--success);">${icons.hospital}</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--gray-800);">Kaiser Permanente Fontana</div>
+                                    <div style="font-size: 10px; color: var(--gray-500);">9961 Sierra Ave, Fontana, CA 92335</div>
+                                </div>
+                                <div style="color: var(--gold-500);">${icons.check}</div>
+                            </div>
+                            <div style="padding: 12px 14px; border-bottom: 1px solid var(--gray-100); display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--info);">${icons.hospital}</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--gray-800);">Kaiser Permanente Ontario</div>
+                                    <div style="font-size: 10px; color: var(--gray-500);">2295 S Vineyard Ave, Ontario, CA 91761</div>
+                                </div>
+                            </div>
+                            <div style="padding: 12px 14px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <div style="width: 32px; height: 32px; background: rgba(59,130,246,0.1); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--info);">${icons.hospital}</div>
+                                <div style="flex: 1;">
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--gray-800);">Kaiser Permanente Riverside</div>
+                                    <div style="font-size: 10px; color: var(--gray-500);">10800 Magnolia Ave, Riverside, CA 92505</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary" style="margin-top: 16px;">Continue ${icons.arrow}</button>
+                    </div>
+                </div>`
+        },
+        {
+            label: "21. Facility Confirm",
+            content: `
+                <div class="screen">
+                    <div class="status-bar"><span>9:41</span><span>5G</span></div>
+                    <div class="app-header">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="header-btn" style="background: transparent;">${icons.arrow}</div>
+                            <div class="app-logo">Confirm Details</div>
+                        </div>
+                    </div>
+                    <div class="content">
+                        <div style="background: white; border-radius: 12px; padding: 14px; margin-bottom: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 44px; height: 44px; background: rgba(239,68,68,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--danger);">${icons.hospital}</div>
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 600; color: var(--gray-800);">Kaiser Permanente Fontana</div>
+                                    <div style="font-size: 11px; color: var(--gray-500);">9961 Sierra Ave, Fontana, CA 92335</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <span style="font-size: 10px; padding: 4px 10px; background: rgba(239,68,68,0.1); color: var(--danger); border-radius: 12px; font-weight: 500;">Hospital</span>
+                                <span style="font-size: 10px; padding: 4px 10px; background: rgba(16,185,129,0.1); color: var(--success); border-radius: 12px; font-weight: 500;">Open 24/7</span>
+                            </div>
+                        </div>
+
+                        <div style="font-size: 12px; font-weight: 600; color: var(--gray-700); margin-bottom: 10px;">Patient / Visitor Information</div>
+
+                        <div class="form-group">
+                            <div class="form-label">Patient Name</div>
+                            <div class="form-input-wrap">
+                                <div class="form-input-icon">${icons.user}</div>
+                                <input type="text" class="form-input" placeholder="Full name of patient" value="Robert Johnson">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">Room / Unit Number</div>
+                            <div class="form-input-wrap">
+                                <div class="form-input-icon">${icons.pin}</div>
+                                <input type="text" class="form-input" placeholder="e.g. Room 412, ICU Bay 3" value="Room 412-B">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-label">Your Relationship</div>
+                            <div class="form-input-wrap">
+                                <div class="form-input-icon">${icons.heart}</div>
+                                <input type="text" class="form-input" placeholder="e.g. Spouse, Child, Attorney" value="Son">
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(59,130,246,0.1); border-radius: 10px; padding: 12px; margin: 14px 0; display: flex; gap: 10px;">
+                            <div style="color: var(--info); flex-shrink: 0;">${icons.alert}</div>
+                            <div style="font-size: 10px; color: var(--gray-600); line-height: 1.5;">
+                                <strong>Facility Requirements:</strong> Photo ID required. Visitor check-in at front desk. Notary must be on facility visitor list. We'll coordinate with facility staff.
+                            </div>
+                        </div>
+
+                        <button class="btn btn-gold">Confirm Facility Booking ${icons.check}</button>
+                    </div>
+                </div>`
+        }
+    ];
+
+    // Dashboard HTML
+    const dashboardHTML = `
+        <div class="dash-header">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div class="dash-title">${icons.activity} Dashboard</div>
+                <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+            </div>
+            <div class="dash-stats">
+                <div class="mini-stat"><div class="mini-stat-value">3</div><div class="mini-stat-label">Inquiries</div></div>
+                <div class="mini-stat"><div class="mini-stat-value">1</div><div class="mini-stat-label">Active</div></div>
+            </div>
+        </div>
+        <div class="dash-content">
+            <div class="stats-row">
+                <div class="stat-card highlight"><div class="stat-value">$375</div><div class="stat-label">Revenue</div></div>
+                <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Completed</div></div>
+                <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Users</div></div>
+                <div class="stat-card"><div class="stat-value">4.9</div><div class="stat-label">Rating</div></div>
+            </div>
+            <div class="dash-grid">
+                <div class="dash-card">
+                    <div class="dash-card-header"><div class="dash-card-title">${icons.pin} Signer Tracking</div><span class="badge" style="background: var(--info);">1</span></div>
+                    <div class="dash-card-body">
+                        <div class="signer-item">
+                            <div class="signer-avatar">MJ</div>
+                            <div class="signer-info"><div class="signer-name">Michael Johnson</div><div class="signer-service">Power of Attorney • Rancho Cucamonga</div></div>
+                            <div class="signer-status">En Route</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-card-header"><div class="dash-card-title">${icons.doc} Inquiries</div><span class="badge">3</span></div>
+                    <div class="dash-card-body">
+                        <div class="signer-item" style="border-left-color: var(--danger);"><div class="signer-avatar">SL</div><div class="signer-info"><div class="signer-name">Sarah Lee</div><div class="signer-service">EMERGENCY • Healthcare Directive</div></div></div>
+                        <div class="signer-item" style="border-left-color: var(--success);"><div class="signer-avatar">JW</div><div class="signer-info"><div class="signer-name">James Wilson</div><div class="signer-service">Standard • Loan Signing</div></div></div>
+                    </div>
+                </div>
+                <div class="dash-card full">
+                    <div class="dash-card-header"><div class="dash-card-title">${icons.bolt} Activity</div></div>
+                    <div class="dash-card-body">
+                        <div class="activity-item"><div class="activity-icon">${icons.check}</div><div><div class="activity-text">Booking confirmed: Michael Johnson</div><div class="activity-time">2 min ago</div></div></div>
+                        <div class="activity-item"><div class="activity-icon" style="background: rgba(239,68,68,0.1); color: var(--danger);">${icons.alert}</div><div><div class="activity-text">EMERGENCY inquiry: Sarah Lee</div><div class="activity-time">5 min ago</div></div></div>
+                        <div class="activity-item"><div class="activity-icon">${icons.user}</div><div><div class="activity-text">New user registered: James Wilson</div><div class="activity-time">12 min ago</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>`;
+
+    // Pricing Structure
+    const pricing = {
+        services: {
+            'General Notary': { base: 15, signatures: 1, travel: 50 },
+            'Loan Signing': { base: 150, signatures: 1, travel: 0 },
+            'Remote (RON)': { base: 25, signatures: 1, travel: 0 },
+            'Apostille': { base: 75, signatures: 1, travel: 25 },
+            'Auto/DMV': { base: 15, signatures: 2, travel: 50 },
+            'On-Site': { base: 15, signatures: 1, travel: 75 },
+            'Facility': { base: 15, signatures: 1, travel: 100 },
+            'Other': { base: 15, signatures: 1, travel: 50 }
+        },
+        documents: {
+            'General Notary': 0,
+            'Power of Attorney': 15,
+            'Healthcare Directive': 15,
+            'Affidavit': 15,
+            'Real Estate Document': 25
+        },
+        urgency: {
+            'EMERGENCY - Within 2 Hours': 50,
+            'Same Day - Within 8 Hours': 25,
+            'Next Business Day': 0
+        },
+        perSignature: 15
+    };
+
+    // App State
+    const appState = {
+        currentScreen: 0,
+        language: 'en',
+        isLoggedIn: false,
+        booking: {
+            serviceType: null,
+            documentType: null,
+            urgency: null,
+            date: null,
+            time: null,
+            facility: null,
+            location: null,
+            signatures: 1
+        },
+        user: {
+            name: 'John Doe',
+            email: 'john.doe@email.com',
+            phone: ''
+        }
+    };
+
+    // Calculate total price
+    function calculatePrice() {
+        let total = 0;
+        let breakdown = [];
+
+        // Base service price
+        const service = pricing.services[appState.booking.serviceType] || pricing.services['General Notary'];
+
+        // Notarization fee (per signature)
+        const sigFee = pricing.perSignature * (appState.booking.signatures || 1);
+        total += sigFee;
+        breakdown.push({ label: `Notarization (${appState.booking.signatures || 1} signature${appState.booking.signatures > 1 ? 's' : ''})`, amount: sigFee });
+
+        // Travel fee
+        if (service.travel > 0) {
+            total += service.travel;
+            breakdown.push({ label: 'Travel Fee', amount: service.travel });
+        }
+
+        // Document type fee
+        const docFee = pricing.documents[appState.booking.documentType] || 0;
+        if (docFee > 0) {
+            total += docFee;
+            breakdown.push({ label: appState.booking.documentType || 'Document', amount: docFee });
+        }
+
+        // Urgency fee
+        const urgencyFee = pricing.urgency[appState.booking.urgency] || 0;
+        if (urgencyFee > 0) {
+            total += urgencyFee;
+            breakdown.push({ label: appState.booking.urgency.split(' - ')[0], amount: urgencyFee });
+        }
+
+        // Loan signing package price
+        if (appState.booking.serviceType === 'Loan Signing') {
+            total = 150; // Flat rate for loan signing
+            breakdown = [{ label: 'Loan Signing Package', amount: 150 }];
+        }
+
+        return { total, breakdown };
+    }
+
+    // Screen flow mapping - using ARRAY INDICES (0-20)
+    // Index 4 = "5. Home" (services), Index 5 = "6. Dashboard" (appointments)
+    const screenFlow = {
+        0: { next: 1, name: 'Welcome' },                     // 1. Welcome
+        1: { next: 3, prev: 0, name: 'Sign Up' },            // 2. Sign Up -> back to Welcome
+        2: { next: 5, prev: 0, name: 'Sign In' },            // 3. Sign In -> back to Welcome
+        3: { next: 5, prev: 1, name: 'OTP' },                // 4. OTP -> back to Sign Up
+        4: { next: 6, prev: 5, name: 'Home' },               // 5. Home (services) -> back to Dashboard
+        5: { next: 4, prev: 4, name: 'Dashboard' },          // 6. Dashboard -> back to Home
+        6: { next: 7, prev: 4, name: 'Service Selection' },  // 7. Service Selection -> back to Home
+        7: { next: 8, prev: 6, name: 'Urgency' },            // 8. Urgency -> back to Service Selection
+        8: { next: 9, prev: 7, name: 'Schedule' },           // 9. Schedule -> back to Urgency
+        9: { next: 10, prev: 8, name: 'Payment' },           // 10. Payment -> back to Schedule
+        10: { next: 5, prev: 5, name: 'Confirmed' },         // 11. Confirmed -> done to Dashboard
+        11: { prev: 5, name: 'Tracking' },                   // 12. Tracking -> back to Dashboard
+        12: { prev: 5, name: 'Chat' },                       // 13. Chat -> back to Dashboard
+        13: { prev: 5, name: 'Documents' },                  // 14. Documents -> back to Dashboard
+        14: { prev: 5, name: 'Profile' },                    // 15. Profile -> back to Dashboard
+        15: { prev: 5, name: 'Acceptable ID' },              // 16. Acceptable ID -> back to Dashboard
+        16: { prev: 14, name: 'Document Vault' },            // 17. Document Vault -> back to Profile
+        17: { prev: 14, name: 'Language' },                  // 18. Language -> back to Profile
+        18: { prev: 4, name: 'RON Video' },                  // 19. RON Video -> back to Home
+        19: { next: 20, prev: 4, name: 'Facility Select' },  // 20. Facility Select -> back to Home
+        20: { next: 10, prev: 19, name: 'Facility Confirm' } // 21. Facility Confirm -> back to Facility Select
+    };
+
+    // Initialize
+    function init() {
+        renderGallery();
+        renderSplitView();
+        attachEventListeners();
+    }
+
+    function renderGallery() {
+        const grid = document.getElementById('phoneGrid');
+        grid.innerHTML = screens.map((s, index) => `
+            <div class="phone-wrapper" onclick="openScreen(${index})">
+                <div class="phone-label">${s.label}</div>
+                <div class="phone">${s.content}</div>
+            </div>
+        `).join('');
+    }
+
+    function renderSplitView() {
+        goToScreen(appState.currentScreen);
+        document.getElementById('dashboardPanel').innerHTML = dashboardHTML;
+    }
+
+    function goToScreen(index) {
+        appState.currentScreen = index;
+        const phone = document.getElementById('interactivePhone');
+        phone.innerHTML = screens[index].content;
+        phone.style.animation = 'none';
+        phone.offsetHeight;
+        phone.style.animation = 'fadeIn 0.3s ease';
+
+        // Update payment screen with dynamic pricing
+        if (index === 9) {
+            updatePaymentScreen(phone);
+        }
+
+        // Update confirmed screen with booking details
+        if (index === 10) {
+            updateConfirmedScreen(phone);
+        }
+
+        attachScreenListeners();
+        updateDashboard();
+    }
+
+    function updatePaymentScreen(phone) {
+        const { total, breakdown } = calculatePrice();
+
+        // Update order summary
+        const orderSummary = phone.querySelector('.order-summary');
+        if (orderSummary) {
+            let summaryHTML = '<div class="order-summary-title">Order Summary</div>';
+
+            breakdown.forEach(item => {
+                summaryHTML += `<div class="order-item"><span class="order-item-label">${item.label}</span><span class="order-item-value">$${item.amount.toFixed(2)}</span></div>`;
+            });
+
+            summaryHTML += '<div class="order-divider"></div>';
+            summaryHTML += `<div class="order-total"><span class="order-total-label">Total</span><span class="order-total-value">$${total.toFixed(2)}</span></div>`;
+
+            orderSummary.innerHTML = summaryHTML;
+        }
+
+        // Update pay button
+        const payBtn = phone.querySelector('.pay-btn');
+        if (payBtn) {
+            payBtn.innerHTML = `${icons.lock} Pay $${total.toFixed(2)}`;
+        }
+    }
+
+    function updateConfirmedScreen(phone) {
+        const { total } = calculatePrice();
+        const confirmDetails = phone.querySelector('.confirm-details');
+
+        if (confirmDetails) {
+            confirmDetails.innerHTML = `
+                <div class="detail-row"><span class="detail-label">Service</span><span class="detail-value">${appState.booking.serviceType || 'General Notary'}</span></div>
+                <div class="detail-row"><span class="detail-label">Document</span><span class="detail-value">${appState.booking.documentType || 'Power of Attorney'}</span></div>
+                <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value">${appState.booking.date ? 'Feb ' + appState.booking.date + ', 2026' : 'Wed, Feb 12, 2026'}</span></div>
+                <div class="detail-row"><span class="detail-label">Time</span><span class="detail-value">${appState.booking.time || '2:00 PM'}</span></div>
+                <div class="detail-row"><span class="detail-label">Location</span><span class="detail-value">Mobile - Your Location</span></div>
+                <div class="detail-row"><span class="detail-label">Total Paid</span><span class="detail-value" style="color: var(--success); font-weight: 700;">$${total.toFixed(2)}</span></div>
+            `;
+        }
+    }
+
+    function openScreen(index) {
+        setView('split');
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view-btn')[1].classList.add('active');
+        goToScreen(index);
+    }
+
+    function nextScreen() {
+        const flow = screenFlow[appState.currentScreen];
+        if (flow && flow.next !== undefined) {
+            goToScreen(flow.next);
+        }
+    }
+
+    function prevScreen() {
+        const flow = screenFlow[appState.currentScreen];
+        if (flow && flow.prev !== undefined) {
+            goToScreen(flow.prev);
+        }
+    }
+
+    function attachScreenListeners() {
+        const phone = document.getElementById('interactivePhone');
+
+        // Continue/Primary buttons
+        phone.querySelectorAll('.btn-primary, .btn-gold').forEach(btn => {
+            btn.style.cursor = 'pointer';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                handleButtonClick(btn);
+            };
+        });
+
+        // Outline/Secondary buttons
+        phone.querySelectorAll('.btn-outline').forEach(btn => {
+            btn.style.cursor = 'pointer';
+            btn.onclick = (e) => {
+                e.preventDefault();
+                handleSecondaryClick(btn);
+            };
+        });
+
+        // Option cards
+        phone.querySelectorAll('.option-card').forEach(card => {
+            card.onclick = () => selectOption(card);
+        });
+
+        // Service cards
+        phone.querySelectorAll('.service-card').forEach(card => {
+            card.onclick = () => selectService(card);
+        });
+
+        // Nav items
+        phone.querySelectorAll('.nav-item').forEach((item, index) => {
+            item.style.cursor = 'pointer';
+            item.onclick = () => handleNavClick(index);
+        });
+
+        // Back arrows - text arrows
+        phone.querySelectorAll('[style*="font-size: 18px"]').forEach(arrow => {
+            if (arrow.textContent === '←') {
+                arrow.style.cursor = 'pointer';
+                arrow.onclick = (e) => {
+                    e.stopPropagation();
+                    prevScreen();
+                };
+            }
+        });
+
+        // Back arrows - icon arrows in header
+        phone.querySelectorAll('.header-btn[style*="transparent"]').forEach(arrow => {
+            arrow.style.cursor = 'pointer';
+            arrow.onclick = (e) => {
+                e.stopPropagation();
+                prevScreen();
+            };
+        });
+
+        // Back arrows - any element with ← text
+        phone.querySelectorAll('div').forEach(el => {
+            if (el.textContent.trim() === '←' && el.children.length === 0) {
+                el.style.cursor = 'pointer';
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    prevScreen();
+                };
+            }
+        });
+
+        // Close buttons (✕)
+        phone.querySelectorAll('.header-btn').forEach(btn => {
+            if (btn.textContent.trim() === '✕') {
+                btn.style.cursor = 'pointer';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    goToScreen(5); // Go to Dashboard
+                };
+            }
+        });
+
+        // Calendar days
+        phone.querySelectorAll('.cal-day, [style*="border-radius: 6px"]').forEach(day => {
+            if (day.style.background && day.style.background.includes('185,129')) {
+                day.style.cursor = 'pointer';
+                day.onclick = () => selectDate(day);
+            }
+        });
+
+        // Time slots
+        phone.querySelectorAll('.time-slot').forEach(slot => {
+            slot.style.cursor = 'pointer';
+            slot.onclick = () => selectTime(slot);
+        });
+
+        // Profile menu items
+        phone.querySelectorAll('.profile-menu-item').forEach((item, index) => {
+            item.style.cursor = 'pointer';
+            item.onclick = () => handleProfileMenuClick(index);
+        });
+
+        // Emergency button
+        const emergencyBtn = phone.querySelector('.btn[style*="danger"]');
+        if (emergencyBtn) {
+            emergencyBtn.onclick = () => {
+                appState.booking.urgency = 'emergency';
+                goToScreen(19); // Facility Select
+            };
+        }
+
+        // Profile/User icon in header
+        phone.querySelectorAll('.header-btn').forEach(btn => {
+            const svg = btn.innerHTML;
+            if (svg.includes('circle cx="12" cy="7"') || svg.includes('M20 21v-2')) {
+                // User icon
+                btn.style.cursor = 'pointer';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    goToScreen(14); // Profile
+                };
+            } else if (svg.includes('circle cx="12" cy="12" r="10"') && svg.includes('M2 12')) {
+                // Globe icon - Language
+                btn.style.cursor = 'pointer';
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    goToScreen(17); // Language
+                };
+            }
+        });
+
+        // Quick reply buttons in chat
+        phone.querySelectorAll('.quick-reply').forEach(reply => {
+            reply.style.cursor = 'pointer';
+            reply.onclick = () => {
+                showNotification('Message sent!');
+            };
+        });
+
+        // Calendar sync buttons
+        phone.querySelectorAll('[style*="flex-direction: column"][style*="gap: 4px"]').forEach(btn => {
+            if (btn.querySelector('span') && btn.closest('[style*="display: flex"][style*="gap: 8px"]')) {
+                btn.style.cursor = 'pointer';
+                btn.onclick = () => {
+                    const calType = btn.querySelector('span')?.textContent;
+                    showNotification(`Added to ${calType} Calendar!`);
+                };
+            }
+        });
+    }
+
+    function handleButtonClick(btn) {
+        const text = btn.textContent.toLowerCase();
+
+        // Welcome screen (index 0)
+        if (text.includes('create account')) {
+            goToScreen(1); // Sign Up (index 1)
+        } else if (text.includes('sign in') && appState.currentScreen === 0) {
+            goToScreen(2); // Sign In (index 2)
+        } else if (text.includes('start now')) {
+            appState.isLoggedIn = true;
+            goToScreen(6); // Service Selection (index 6 = "7. Service Selection")
+        } else if (text.includes('verify')) {
+            appState.isLoggedIn = true;
+            goToScreen(5); // Dashboard (index 5 = "6. Dashboard")
+        } else if (text.includes('sign in') && appState.currentScreen === 2) {
+            appState.isLoggedIn = true;
+            goToScreen(5); // Dashboard (index 5)
+        } else if (text.includes('sign up')) {
+            goToScreen(3); // OTP (index 3)
+        } else if (text.includes('book new')) {
+            goToScreen(4); // Home (index 4 = "5. Home" with service cards)
+        } else if (text.includes('pay')) {
+            goToScreen(10); // Confirmed (index 10 = "11. Confirmed")
+            showNotification('Payment successful!');
+        } else if (text.includes('confirm facility')) {
+            goToScreen(10); // Confirmed (index 10)
+            showNotification('Facility booking confirmed!');
+        } else if (text.includes('confirm time')) {
+            goToScreen(9); // Payment (index 9 = "10. Payment")
+        } else if (text.includes('view details')) {
+            goToScreen(11); // Tracking (index 11 = "12. Tracking")
+        } else if (text.includes('continue')) {
+            nextScreen();
+        } else {
+            nextScreen();
+        }
+    }
+
+    function handleSecondaryClick(btn) {
+        const text = btn.textContent.toLowerCase();
+        if (text.includes('done')) {
+            goToScreen(5); // Dashboard (index 5)
+        } else if (text.includes('sign in')) {
+            goToScreen(2); // Sign In (index 2)
+        } else if (text.includes('acceptable')) {
+            goToScreen(15); // Acceptable ID (index 15 = "16. Acceptable ID")
+        } else if (text.includes('view details')) {
+            goToScreen(11); // Tracking (index 11)
+        }
+    }
+
+    function selectOption(card) {
+        const parent = card.parentElement;
+        parent.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+
+        const title = card.querySelector('.option-title');
+        if (title) {
+            const screenName = screenFlow[appState.currentScreen]?.name;
+            if (screenName === 'Service Selection') {
+                appState.booking.documentType = title.textContent;
+            } else if (screenName === 'Urgency') {
+                appState.booking.urgency = title.textContent;
+            } else if (screenName === 'Facility Select') {
+                appState.booking.facility = title.textContent;
+            }
+        }
+    }
+
+    function selectService(card) {
+        const name = card.querySelector('.service-name');
+        if (name) {
+            const serviceName = name.textContent;
+            appState.booking.serviceType = serviceName;
+
+            // Map each service to correct flow (using array indices)
+            switch(serviceName) {
+                case 'Facility':
+                    goToScreen(19); // Facility Select (index 19 = "20. Facility Select")
+                    break;
+                case 'Remote (RON)':
+                    goToScreen(18); // RON Video Call (index 18 = "19. RON Video Call")
+                    break;
+                case 'Document Vault':
+                    goToScreen(16); // Document Vault (index 16 = "17. Document Vault")
+                    break;
+                case 'General Notary':
+                case 'Loan Signing':
+                case 'Apostille':
+                case 'Auto/DMV':
+                case 'On-Site':
+                case 'Other':
+                    goToScreen(6); // Service Selection (index 6 = "7. Service Selection")
+                    break;
+                default:
+                    goToScreen(6); // Default to Service Selection
+            }
+        }
+    }
+
+    function selectDate(day) {
+        const phone = document.getElementById('interactivePhone');
+        phone.querySelectorAll('[style*="border-radius: 6px"]').forEach(d => {
+            if (d.style.background && d.style.background.includes('navy')) {
+                d.style.background = 'rgba(16,185,129,0.15)';
+                d.style.color = 'var(--gray-700)';
+                d.style.fontWeight = 'normal';
+            }
+        });
+        day.style.background = 'var(--navy-700)';
+        day.style.color = 'white';
+        day.style.fontWeight = '600';
+        appState.booking.date = day.textContent;
+    }
+
+    function selectTime(slot) {
+        const phone = document.getElementById('interactivePhone');
+        phone.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+        slot.classList.add('selected');
+        appState.booking.time = slot.textContent;
+    }
+
+    function handleNavClick(index) {
+        // Nav bar: Home, Docs, Book, Chat (using array indices)
+        const navMap = [4, 13, 6, 12]; // Home (4), Documents (13), Service Selection (6), Chat (12)
+        if (navMap[index] !== undefined) {
+            goToScreen(navMap[index]);
+        }
+    }
+
+    function handleProfileMenuClick(index) {
+        // Profile menu items (using array indices):
+        // 0 = My Documents, 1 = Appointment History, 2 = Saved Addresses
+        // 3 = Privacy & Security, 4 = Language, 5 = Settings, 6 = Sign Out
+        switch(index) {
+            case 0: // My Documents
+                goToScreen(16); // Document Vault (index 16)
+                break;
+            case 1: // Appointment History
+                goToScreen(5); // Dashboard (index 5)
+                break;
+            case 2: // Saved Addresses
+                showNotification('Saved addresses coming soon!');
+                break;
+            case 3: // Privacy & Security
+                showNotification('Privacy settings coming soon!');
+                break;
+            case 4: // Language
+                goToScreen(17); // Language (index 17)
+                break;
+            case 5: // Settings
+                showNotification('Settings coming soon!');
+                break;
+            case 6: // Sign Out
+                appState.isLoggedIn = false;
+                goToScreen(0); // Welcome (index 0)
+                showNotification('Signed out successfully');
+                break;
+        }
+    }
+
+    function updateDashboard() {
+        const dash = document.getElementById('dashboardPanel');
+        if (!dash) return;
+
+        // Update activity based on current action
+        const activityDiv = dash.querySelector('.dash-card.full .dash-card-body');
+        if (activityDiv && appState.booking.serviceType) {
+            const newActivity = `<div class="activity-item"><div class="activity-icon" style="background: rgba(16,185,129,0.1); color: var(--success);">${icons.check}</div><div><div class="activity-text">New booking: ${appState.booking.serviceType}</div><div class="activity-time">Just now</div></div></div>`;
+            activityDiv.innerHTML = newActivity + activityDiv.innerHTML;
+        }
+    }
+
+    function showNotification(message) {
+        const notif = document.createElement('div');
+        notif.style.cssText = 'position: fixed; top: 20px; right: 20px; background: var(--success); color: white; padding: 16px 24px; border-radius: 12px; font-weight: 600; z-index: 9999; animation: fadeIn 0.3s ease;';
+        notif.textContent = message;
+        document.body.appendChild(notif);
+        setTimeout(() => notif.remove(), 3000);
+    }
+
+    function attachEventListeners() {
+        // Add CSS animation
+        const style = document.createElement('style');
+        style.textContent = '@keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }';
+        document.head.appendChild(style);
+    }
+
+    function setView(view) {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+
+        document.getElementById('galleryView').classList.remove('active');
+        document.getElementById('splitView').classList.remove('active');
+
+        if (view === 'gallery') {
+            document.getElementById('galleryView').classList.add('active');
+        } else if (view === 'split') {
+            document.getElementById('splitView').classList.add('active');
+            document.querySelector('.consumer-side').style.display = 'flex';
+            document.querySelector('.dashboard-side').style.display = 'flex';
+            attachScreenListeners();
+        } else if (view === 'dashboard') {
+            document.getElementById('splitView').classList.add('active');
+            document.querySelector('.consumer-side').style.display = 'none';
+            document.querySelector('.dashboard-side').style.display = 'flex';
+        }
+    }
+
+    init();
+    </script>
+</body>
+</html>

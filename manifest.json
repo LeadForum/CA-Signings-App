@@ -1,0 +1,31 @@
+{
+  "name": "CA Signings - Mobile Notary",
+  "short_name": "CA Signings",
+  "description": "Professional mobile notary and loan signing services. Notarized in minutes. Anywhere. Any language.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0B1426",
+  "theme_color": "#1E3A5F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "shortcuts": [
+    {
+      "name": "Book Appointment",
+      "url": "/?action=book",
+      "description": "Schedule a notary appointment"
+    },
+    {
+      "name": "Call Now",
+      "url": "tel:+19099196316",
+      "description": "Call CA Signings directly"
+    }
+  ]
+}
